@@ -35,10 +35,10 @@ func (r *AddWordRequest) ToDomainWord() (*model.Word, error) {
 	}
 
 	word := &model.Word{
-		UserID:    r.UserID,
-		English:   strings.TrimSpace(record[0]),
-		Russian:   strings.TrimSpace(record[1]),
-		CreatedAt: time.Now(),
+		UserID:      r.UserID,
+		UserWord:    strings.TrimSpace(record[0]),
+		Translation: strings.TrimSpace(record[1]),
+		CreatedAt:   time.Now(),
 	}
 	return word, nil
 }
