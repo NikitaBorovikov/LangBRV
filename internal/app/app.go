@@ -2,6 +2,7 @@ package app
 
 import (
 	"langbrv/internal/config"
+	inmemory "langbrv/internal/infrastucture/repository/inMemory"
 	"langbrv/internal/infrastucture/transport/tgBot/bot"
 	"langbrv/internal/infrastucture/transport/tgBot/handlers"
 	"langbrv/internal/usecases"
@@ -14,7 +15,9 @@ func Run() {
 		log.Fatalf("failed to init config: %v", err)
 	}
 
-	usecases := usecases.NewUseCases(nil, nil, nil)
+	inMemoryDB := inmemory.NewUserStateRepo()
+
+	usecases := usecases.NewUseCases(nil, nil, inMemoryDB)
 	handlers := handlers.NewHandlers(usecases)
 
 	bot, err := bot.NewBot(&cfg.Telegram, handlers)
