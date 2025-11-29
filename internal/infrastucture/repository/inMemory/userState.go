@@ -25,15 +25,15 @@ func (r *UserStateRepo) Set(state *model.UserState) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.states[state.ChatID] = state
+	r.states[state.UserID] = state
 	return nil
 }
 
-func (r *UserStateRepo) Get(chatID int64) (*model.UserState, error) {
+func (r *UserStateRepo) Get(userID int64) (*model.UserState, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	state := r.states[chatID]
+	state := r.states[userID]
 	if state == nil {
 		return nil, fmt.Errorf("failed to find state with such chatID")
 	}

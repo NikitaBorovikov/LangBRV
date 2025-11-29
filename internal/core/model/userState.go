@@ -7,13 +7,13 @@ const (
 )
 
 type UserState struct {
-	ChatID int64
+	UserID int64
 	State  State
 }
 
-func NewUserState(chatID int64, state State) *UserState {
+func NewUserState(userID int64, state State) *UserState {
 	return &UserState{
-		ChatID: chatID,
+		UserID: userID,
 		State:  state,
 	}
 }
