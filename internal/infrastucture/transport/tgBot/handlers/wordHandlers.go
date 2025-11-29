@@ -1,8 +1,20 @@
 package handlers
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	"langbrv/internal/core/model"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
 
 func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
-	msg := "Enter word in format: word-translate"
+	var msg string
+
+	state := model.NewUserState(update.Message.Chat.ID, model.AddWord)
+	if err := h.UseCases.UserStateUC.Set(state); err != nil {
+		msg = "Ошибка"
+		return msg
+	}
+
+	msg = "Введи слово в формате слово-перевод"
 	return msg
 }
