@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"langbrv/internal/core/model"
+	"langbrv/internal/infrastucture/transport/tgBot/dto"
+	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -17,4 +20,21 @@ func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
 
 	msg = "Введи слово в формате слово-перевод"
 	return msg
+}
+
+func (h *Handlers) SaveWord(update tgbotapi.Update) string {
+	req := dto.NewAddWordRequest(update.Message.From.ID, update.Message.Text)
+	word, err := req.ToDomainWord()
+
+	if err != nil {
+		return "Некорректный формат ввода"
+	}
+
+	wordID, err := h.UseCases.WordUC.Add(word)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return "Ошибка сохранения"
+	}
+	fmt.Printf("word is saved: id = %s", wordID)
+	return "Слово сохранено"
 }

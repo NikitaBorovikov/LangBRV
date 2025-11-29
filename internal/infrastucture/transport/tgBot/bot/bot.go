@@ -2,6 +2,7 @@ package bot
 
 import (
 	"langbrv/internal/config"
+	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/handlers"
 	"log"
 
@@ -50,6 +51,8 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 
 		if update.Message.IsCommand() {
 			b.handleCommands(update)
+		} else {
+			b.handleMessages(update)
 		}
 	}
 }
@@ -63,6 +66,19 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 
 	case AddWordCommand:
 		msgText := b.handlers.AddWordCommand(update)
+		b.sendMessage(update, msgText)
+	}
+}
+
+func (b *Bot) handleMessages(update tgbotapi.Update) {
+	userState, err := b.handlers.UseCases.UserStateUC.Get(update.Message.From.ID)
+	if err != nil {
+		return
+	}
+
+	switch userState.State {
+	case model.AddWord:
+		msgText := b.handlers.SaveWord(update)
 		b.sendMessage(update, msgText)
 	}
 }
