@@ -3,8 +3,14 @@ package bot
 import (
 	"langbrv/internal/config"
 	"langbrv/internal/infrastucture/transport/tgBot/handlers"
+	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
+
+const (
+	StartCommand   = "start"
+	AddWordCommand = "add_word"
 )
 
 type Bot struct {
@@ -41,11 +47,29 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 		if update.Message == nil {
 			continue
 		}
-		// REMOVE: for testing
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		msg.ReplyToMessageID = update.Message.MessageID
-		if _, err := b.bot.Send(msg); err != nil {
-			panic(err)
+
+		if update.Message.IsCommand() {
+			b.handleCommands(update)
 		}
+	}
+}
+
+func (b *Bot) handleCommands(update tgbotapi.Update) {
+	switch update.Message.Command() {
+
+	case StartCommand:
+		msgText := b.handlers.StartCommand(update)
+		b.sendMessage(update, msgText)
+
+	case AddWordCommand:
+		msgText := b.handlers.AddWordCommand(update)
+		b.sendMessage(update, msgText)
+	}
+}
+
+func (b *Bot) sendMessage(update tgbotapi.Update, text string) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	if _, err := b.bot.Send(msg); err != nil {
+		log.Printf("failed to send message to chat id: %d, err: %v", update.Message.Chat.ID, err)
 	}
 }
