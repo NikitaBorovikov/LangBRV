@@ -14,7 +14,7 @@ func Run() {
 		log.Fatalf("failed to init config: %v", err)
 	}
 
-	usecases := usecases.NewUseCases(nil, nil)
+	usecases := usecases.NewUseCases(nil, nil, nil)
 	handlers := handlers.NewHandlers(usecases)
 
 	bot, err := bot.NewBot(&cfg.Telegram, handlers)
