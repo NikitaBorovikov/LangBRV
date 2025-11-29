@@ -18,3 +18,7 @@ func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
 	msg = "Введи слово в формате слово-перевод"
 	return msg
 }
+
+func (h *Handlers) SaveWord(update tgbotapi.Update) string {
+	return "Получил!"
+}
