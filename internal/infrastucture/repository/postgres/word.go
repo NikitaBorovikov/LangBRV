@@ -41,3 +41,8 @@ func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, er
 	}
 	return &existingWord, nil
 }
+
+func (r *WordRepo) Update(word *model.Word) error {
+	result := r.db.Model(word).Where("id = ?", word.ID).Update("last_seen", word.LastSeen)
+	return result.Error
+}
