@@ -44,8 +44,9 @@ type Success struct {
 }
 
 type Errors struct {
-	Unknown string `yaml:"unknown"`
-	NoWords string `yaml:"no_words"`
+	Unknown        string `yaml:"unknown"`
+	UnknownCommand string `yaml:"unknown_command"`
+	NoWords        string `yaml:"no_words"`
 }
 
 func InitConfig() (*Config, error) {
