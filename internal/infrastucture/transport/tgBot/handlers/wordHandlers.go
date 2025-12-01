@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
@@ -11,30 +10,26 @@ import (
 )
 
 func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
-	var msg string
-
 	state := model.NewUserState(update.Message.Chat.ID, model.AddWord)
 	if err := h.UseCases.UserStateUC.Set(state); err != nil {
-		errMsgText := apperrors.HandleError(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
 	}
-
-	msg = "Введи слово в формате слово-перевод"
-	return msg
+	return h.Msg.Info.AddWord
 }
 
 func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) string {
 	words, err := h.UseCases.WordUC.GetAll(update.Message.From.ID)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
 	}
 
 	dictionary, err := h.UseCases.WordUC.FormatDictionary(words)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
 	}
 	return dictionary
@@ -45,16 +40,16 @@ func (h *Handlers) SaveWord(update tgbotapi.Update) string {
 	word, err := req.ToDomainWord()
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
 	}
 
 	wordID, err := h.UseCases.WordUC.Add(word)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
 	}
-	fmt.Printf("word is saved: id = %s", wordID)
-	return "Слово сохранено"
+	logrus.Infof("word is saved: id = %s", wordID)
+	return h.Msg.Success.WordAdded
 }

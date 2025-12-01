@@ -31,7 +31,7 @@ func Run() {
 
 	repo := repo.NewRepository(db)
 	usecases := usecases.NewUseCases(repo)
-	handlers := handlers.NewHandlers(usecases)
+	handlers := handlers.NewHandlers(usecases, &cfg.Msg)
 
 	bot, err := bot.NewBot(&cfg.Telegram, handlers)
 	if err != nil {
