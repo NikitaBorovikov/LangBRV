@@ -2,11 +2,11 @@ package config
 
 import (
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
 )
 
 const (
-	configPath = "config/config.yaml"
+	configYAMLPath = "config/config.yaml"
+	configENVPath  = ".env"
 )
 
 type Config struct {
@@ -52,16 +52,10 @@ type Errors struct {
 func InitConfig() (*Config, error) {
 	var cfg Config
 
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
+	if err := cleanenv.ReadConfig(configYAMLPath, &cfg); err != nil {
 		return nil, err
 	}
-	if err := godotenv.Load(); err != nil {
-		return nil, err
-	}
-	if err := cleanenv.ReadEnv(&cfg.Telegram); err != nil {
-		return nil, err
-	}
-	if err := cleanenv.ReadEnv(&cfg.DB); err != nil {
+	if err := cleanenv.ReadConfig(configENVPath, &cfg); err != nil {
 		return nil, err
 	}
 	return &cfg, nil
