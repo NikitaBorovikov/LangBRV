@@ -16,10 +16,13 @@ func NewWordRepo(db *gorm.DB) *WordRepo {
 	}
 }
 
-func (r *WordRepo) Add(w *model.Word) (string, error) {
-	return "", nil
+func (r *WordRepo) Add(word *model.Word) (string, error) {
+	result := r.db.Create(word)
+	return word.ID, result.Error
 }
 
 func (r *WordRepo) GetAll(userID string) ([]model.Word, error) {
-	return nil, nil
+	var words []model.Word
+	result := r.db.Where("user_id = ?", userID).Find(&words)
+	return words, result.Error
 }
