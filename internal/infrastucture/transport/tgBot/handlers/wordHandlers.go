@@ -29,8 +29,13 @@ func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) string {
 		logrus.Error(err)
 		return "Ошибка"
 	}
-	fmt.Println(words)
-	return "Словарь"
+
+	dictionary, err := h.UseCases.WordUC.FormatDictionary(words)
+	if err != nil {
+		logrus.Error(err)
+		return "Ошибка"
+	}
+	return dictionary
 }
 
 func (h *Handlers) SaveWord(update tgbotapi.Update) string {
