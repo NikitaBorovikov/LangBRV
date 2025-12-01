@@ -16,10 +16,12 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 	}
 }
 
-func (r *UserRepo) Create(u *model.User) (string, error) {
-	return "", nil
+func (r *UserRepo) CreateOrUpdate(user *model.User) error {
+	return r.db.Save(user).Error
 }
 
 func (r *UserRepo) GetByID(userID string) (*model.User, error) {
-	return nil, nil
+	var user model.User
+	result := r.db.Where("id = ?", userID).Find(&user)
+	return &user, result.Error
 }

@@ -7,6 +7,18 @@ import (
 	"time"
 )
 
+type RegistrationRequest struct {
+	UserID   int64
+	Username string
+}
+
+func NewRegistrationRequest(userID int64, username string) *RegistrationRequest {
+	return &RegistrationRequest{
+		UserID:   userID,
+		Username: username,
+	}
+}
+
 type AddWordRequest struct {
 	UserID int64
 	Msg    string
@@ -41,4 +53,11 @@ func (r *AddWordRequest) ToDomainWord() (*model.Word, error) {
 		LastSeen:    time.Now(),
 	}
 	return word, nil
+}
+
+func (r *RegistrationRequest) ToDomainUser() *model.User {
+	return &model.User{
+		ID:       r.UserID,
+		Username: r.Username,
+	}
 }

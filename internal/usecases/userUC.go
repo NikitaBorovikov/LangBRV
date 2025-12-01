@@ -15,8 +15,8 @@ func NewUserUC(ur repository.UserRepo) *UserUC {
 	}
 }
 
-func (uc *UserUC) Create(u *model.User) (string, error) {
-	return "", nil
+func (uc *UserUC) CreateOrUpdate(user *model.User) error {
+	return uc.UserRepo.CreateOrUpdate(user)
 }
 
 func (uc *UserUC) GetByID(userID string) (*model.User, error) {
