@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	StartCommand   = "start"
-	AddWordCommand = "add_word"
+	StartCommand         = "start"
+	AddWordCommand       = "add_word"
+	GetDictionaryCommand = "dictionary"
 )
 
 type Bot struct {
@@ -66,6 +67,10 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 
 	case AddWordCommand:
 		msgText := b.handlers.AddWordCommand(update)
+		b.sendMessage(update, msgText)
+
+	case GetDictionaryCommand:
+		msgText := b.handlers.GetDictionaryCommand(update)
 		b.sendMessage(update, msgText)
 	}
 }

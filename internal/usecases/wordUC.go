@@ -20,7 +20,7 @@ func (uc *WordUC) Add(word *model.Word) (string, error) {
 	return wordID, err
 }
 
-func (uc *WordUC) GetAll(userID string) ([]model.Word, error) {
+func (uc *WordUC) GetAll(userID int64) ([]model.Word, error) {
 	words, err := uc.WordRepo.GetAll(userID)
 	return words, err
 }
