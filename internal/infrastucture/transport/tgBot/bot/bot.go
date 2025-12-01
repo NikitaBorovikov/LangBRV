@@ -4,9 +4,9 @@ import (
 	"langbrv/internal/config"
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/handlers"
-	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -49,7 +49,6 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 		if update.Message == nil {
 			continue
 		}
-
 		if update.Message.IsCommand() {
 			b.handleCommands(update)
 		} else {
@@ -95,6 +94,6 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 func (b *Bot) sendMessage(update tgbotapi.Update, text string) {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 	if _, err := b.bot.Send(msg); err != nil {
-		log.Printf("failed to send message to chat id: %d, err: %v", update.Message.Chat.ID, err)
+		logrus.Errorf("failed to send message to chat id: %d, err: %v", update.Message.Chat.ID, err)
 	}
 }

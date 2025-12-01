@@ -11,7 +11,9 @@ import (
 
 func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
 	state := model.NewUserState(update.Message.Chat.ID, model.AddWord)
+
 	if err := h.UseCases.UserStateUC.Set(state); err != nil {
+		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
 	}
