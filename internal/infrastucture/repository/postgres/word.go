@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"errors"
 	"langbrv/internal/core/model"
 
 	"gorm.io/gorm"
@@ -25,4 +26,18 @@ func (r *WordRepo) GetAll(userID int64) ([]model.Word, error) {
 	var words []model.Word
 	result := r.db.Where("user_id = ?", userID).Find(&words)
 	return words, result.Error
+}
+
+func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, error) {
+	var existingWord model.Word
+
+	err := r.db.Where("user_id = ? AND original = ?", userID, word).First(&existingWord).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Если не нашли слово - это не ошибка
+		}
+		return nil, err
+	}
+	return &existingWord, nil
 }
