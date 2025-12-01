@@ -12,10 +12,8 @@ func (h *Handlers) StartCommand(update tgbotapi.Update) string {
 	user := req.ToDomainUser()
 
 	if err := h.UseCases.UserUC.CreateOrUpdate(user); err != nil {
-		errMsgText := apperrors.HandleError(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
 	}
-
-	msg := "Привет, это LANGBRV, бот для изучения английского языка! Напиши /add_word чтобы добавить первое слово!"
-	return msg
+	return h.Msg.Info.Start
 }

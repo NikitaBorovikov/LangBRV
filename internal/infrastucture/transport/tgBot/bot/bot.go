@@ -72,6 +72,10 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 	case GetDictionaryCommand:
 		msgText := b.handlers.GetDictionaryCommand(update)
 		b.sendMessage(update, msgText)
+
+	default:
+		msgText := b.handlers.Msg.Errors.UnknownCommand
+		b.sendMessage(update, msgText)
 	}
 }
 

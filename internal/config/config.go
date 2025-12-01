@@ -5,9 +5,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	configPath = "config/config.yaml"
+)
+
 type Config struct {
 	Telegram Telegram
 	DB       DB
+	Msg      Messages `yaml:"messages"`
 }
 
 type Telegram struct {
@@ -22,9 +27,34 @@ type DB struct {
 	Port     int    `env:"DB_PORT"`
 }
 
+type Messages struct {
+	Info    Info    `yaml:"info"`
+	Success Success `yaml:"success"`
+	Errors  Errors  `yaml:"errors"`
+}
+
+type Info struct {
+	Start   string `yaml:"start"`
+	AddWord string `yaml:"add_word"`
+}
+
+type Success struct {
+	WordAdded   string `yaml:"word_added"`
+	WordDeleted string `yaml:"word_deleted"`
+}
+
+type Errors struct {
+	Unknown        string `yaml:"unknown"`
+	UnknownCommand string `yaml:"unknown_command"`
+	NoWords        string `yaml:"no_words"`
+}
+
 func InitConfig() (*Config, error) {
 	var cfg Config
 
+	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
+		return nil, err
+	}
 	if err := godotenv.Load(); err != nil {
 		return nil, err
 	}
