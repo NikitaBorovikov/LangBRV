@@ -24,7 +24,7 @@ func (r *WordRepo) Add(word *model.Word) (string, error) {
 
 func (r *WordRepo) GetAll(userID int64) ([]model.Word, error) {
 	var words []model.Word
-	result := r.db.Where("user_id = ?", userID).Find(&words)
+	result := r.db.Where("user_id = ?", userID).Order("last_seen DESC").Find(&words)
 	return words, result.Error
 }
 
