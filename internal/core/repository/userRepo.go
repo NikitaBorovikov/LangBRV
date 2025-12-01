@@ -3,6 +3,6 @@ package repository
 import "langbrv/internal/core/model"
 
 type UserRepo interface {
-	Create(u *model.User) (string, error)
+	CreateOrUpdate(u *model.User) error
 	GetByID(userID string) (*model.User, error)
 }

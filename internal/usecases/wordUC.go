@@ -15,10 +15,12 @@ func NewWordUC(wr repository.WordRepo) *WordUC {
 	}
 }
 
-func (uc *WordUC) Add(w *model.Word) (string, error) {
-	return "", nil
+func (uc *WordUC) Add(word *model.Word) (string, error) {
+	wordID, err := uc.WordRepo.Add(word)
+	return wordID, err
 }
 
 func (uc *WordUC) GetAll(userID string) ([]model.Word, error) {
-	return nil, nil
+	words, err := uc.WordRepo.GetAll(userID)
+	return words, err
 }

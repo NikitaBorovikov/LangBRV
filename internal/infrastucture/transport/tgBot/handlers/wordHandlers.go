@@ -25,7 +25,6 @@ func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
 func (h *Handlers) SaveWord(update tgbotapi.Update) string {
 	req := dto.NewAddWordRequest(update.Message.From.ID, update.Message.Text)
 	word, err := req.ToDomainWord()
-
 	if err != nil {
 		return "Некорректный формат ввода"
 	}
