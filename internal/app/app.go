@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"langbrv/internal/config"
+	"langbrv/internal/core/model"
 	repo "langbrv/internal/infrastucture/repository"
 	"langbrv/internal/infrastucture/transport/tgBot/bot"
 	"langbrv/internal/infrastucture/transport/tgBot/handlers"
@@ -24,7 +25,9 @@ func Run() {
 		logrus.Fatalf("failed to init PostgreSQL: %v", err)
 	}
 
-	// TODO: add auto migrate
+	if err := db.AutoMigrate(&model.User{}, &model.Word{}); err != nil {
+		logrus.Fatalf("failed to run GORM migrate: %v", err)
+	}
 
 	repo := repo.NewRepository(db)
 	usecases := usecases.NewUseCases(repo)
