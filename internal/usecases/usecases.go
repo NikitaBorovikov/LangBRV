@@ -1,6 +1,8 @@
 package usecases
 
-import "langbrv/internal/core/repository"
+import (
+	repo "langbrv/internal/infrastucture/repository"
+)
 
 type UseCases struct {
 	UserUC      *UserUC
@@ -8,10 +10,10 @@ type UseCases struct {
 	UserStateUC *UserStateUC
 }
 
-func NewUseCases(ur repository.UserRepo, wr repository.WordRepo, sr repository.UserStateRepo) *UseCases {
+func NewUseCases(r *repo.Repository) *UseCases {
 	return &UseCases{
-		UserUC:      NewUserUC(ur),
-		WordUC:      NewWordUC(wr),
-		UserStateUC: NewUserStateUC(sr),
+		UserUC:      NewUserUC(r.UserRepo),
+		WordUC:      NewWordUC(r.WordRepo),
+		UserStateUC: NewUserStateUC(r.UserStateRepo),
 	}
 }
