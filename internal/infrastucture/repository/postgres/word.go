@@ -21,7 +21,7 @@ func (r *WordRepo) Add(word *model.Word) (string, error) {
 	return word.ID, result.Error
 }
 
-func (r *WordRepo) GetAll(userID string) ([]model.Word, error) {
+func (r *WordRepo) GetAll(userID int64) ([]model.Word, error) {
 	var words []model.Word
 	result := r.db.Where("user_id = ?", userID).Find(&words)
 	return words, result.Error
