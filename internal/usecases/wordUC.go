@@ -5,6 +5,7 @@ import (
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"langbrv/internal/core/repository"
+	"time"
 )
 
 type WordUC struct {
@@ -18,8 +19,24 @@ func NewWordUC(wr repository.WordRepo) *WordUC {
 }
 
 func (uc *WordUC) Add(word *model.Word) (string, error) {
+	// Проверяем, есть ли уже такое слово в словаре
+	existingWord, err := uc.WordRepo.FindByUserAndWord(word.UserID, word.Original)
+	if err != nil {
+		return "", err
+	}
+
+	// Если слово уже есть, то просто обновляем его с новым LastSeen полем
+	if existingWord != nil {
+		existingWord.LastSeen = time.Now()
+		err := uc.WordRepo.Update(existingWord)
+		return existingWord.ID, err
+	}
+	// Если слова нет, то добавляем его
 	wordID, err := uc.WordRepo.Add(word)
-	return wordID, err
+	if err != nil {
+		return "", err
+	}
+	return wordID, nil
 }
 
 func (uc *WordUC) GetAll(userID int64) ([]model.Word, error) {

@@ -32,7 +32,7 @@ func NewAddWordRequest(userID int64, msg string) *AddWordRequest {
 }
 
 func (r *AddWordRequest) ToDomainWord() (*model.Word, error) {
-	record := strings.Split(r.Msg, "-")
+	record := strings.Split(strings.ToLower(r.Msg), "-")
 
 	if r.UserID == 0 {
 		return nil, fmt.Errorf("невалидный userID")
