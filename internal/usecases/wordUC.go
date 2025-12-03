@@ -59,3 +59,24 @@ func (uc *WordUC) FormatDictionary(words []model.Word) (string, error) {
 	}
 	return dictionary, nil
 }
+
+func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {
+	remindList, err := uc.WordRepo.GetRemindList(userID)
+	if err != nil {
+		return nil, err
+	}
+	return remindList, nil
+}
+
+func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {
+	if len(words) == 0 {
+		return "", apperrors.ErrNoWordsToRemind
+	}
+
+	remindMsg := "Слова на повторение:\n"
+
+	for idx, word := range words {
+		remindMsg += fmt.Sprintf("%d. %s - %s\n", idx+1, word.Original, word.Translation)
+	}
+	return remindMsg, nil
+}
