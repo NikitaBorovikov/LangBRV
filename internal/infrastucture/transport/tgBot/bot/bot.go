@@ -13,6 +13,7 @@ const (
 	StartCommand         = "start"
 	AddWordCommand       = "add_word"
 	GetDictionaryCommand = "dictionary"
+	RemindCommand        = "remind"
 )
 
 type Bot struct {
@@ -71,6 +72,10 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 	case GetDictionaryCommand:
 		msgText := b.handlers.GetDictionaryCommand(update)
 		b.sendMessage(update, msgText)
+
+	case RemindCommand:
+		msgTest := b.handlers.GetRemindListCommand(update)
+		b.sendMessage(update, msgTest)
 
 	default:
 		msgText := b.handlers.Msg.Errors.UnknownCommand

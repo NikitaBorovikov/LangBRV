@@ -37,6 +37,23 @@ func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) string {
 	return dictionary
 }
 
+func (h *Handlers) GetRemindListCommand(update tgbotapi.Update) string {
+	remindList, err := h.UseCases.WordUC.GetRemindList(update.Message.From.ID)
+	if err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
+		return errMsgText
+	}
+
+	remindMsg, err := h.UseCases.WordUC.FormatRemindList(remindList)
+	if err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
+		return errMsgText
+	}
+	return remindMsg
+}
+
 func (h *Handlers) SaveWord(update tgbotapi.Update) string {
 	req := dto.NewAddWordRequest(update.Message.From.ID, update.Message.Text)
 	word, err := req.ToDomainWord()
