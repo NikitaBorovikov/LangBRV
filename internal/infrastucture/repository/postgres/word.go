@@ -42,6 +42,20 @@ func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, er
 	return &existingWord, nil
 }
 
+func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
+	var remindWords []model.Word
+	remindIntervals := []int{1, 3, 10, 30, 90}
+
+	err := r.db.Where("user_id = ? AND (EXTRACT(DAY FROM NOW() - last_seen) IN ?)", userID, remindIntervals).Find(&remindWords).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Если нет слов на посторение - это не ошибка
+		}
+		return nil, err
+	}
+	return remindWords, nil
+}
+
 func (r *WordRepo) Update(word *model.Word) error {
 	result := r.db.Model(word).Where("id = ?", word.ID).Update("last_seen", word.LastSeen)
 	return result.Error
