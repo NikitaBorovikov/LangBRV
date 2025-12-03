@@ -4,6 +4,7 @@ import (
 	"langbrv/internal/config"
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/handlers"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
@@ -59,6 +60,12 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 }
 
 func (b *Bot) handleCommands(update tgbotapi.Update) {
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		logrus.Infof("Duration: %v", duration)
+	}()
+
 	switch update.Message.Command() {
 
 	case StartCommand:
