@@ -10,13 +10,14 @@ const (
 )
 
 type Config struct {
-	Telegram Telegram
+	Telegram Telegram `yaml:"telegram"`
 	DB       DB
 	Msg      Messages `yaml:"messages"`
 }
 
 type Telegram struct {
-	Token string `env:"TELEGRAM_TOKEN"`
+	Token         string `env:"TELEGRAM_TOKEN"`
+	UpdateTimeout int    `yaml:"update_timeout"`
 }
 
 type DB struct {

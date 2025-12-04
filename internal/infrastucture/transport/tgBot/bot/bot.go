@@ -40,9 +40,8 @@ func NewBot(cfg *config.Telegram, handlers *handlers.Handlers) (*Bot, error) {
 
 func (b *Bot) Start() {
 	updateConfig := tgbotapi.NewUpdate(0)
-	updateConfig.Timeout = 30
+	updateConfig.Timeout = b.cfg.UpdateTimeout
 	updates := b.bot.GetUpdatesChan(updateConfig)
-
 	b.handleUpdates(updates)
 }
 
