@@ -54,6 +54,17 @@ func (h *Handlers) GetRemindListCommand(update tgbotapi.Update) string {
 	return remindMsg
 }
 
+func (h *Handlers) DeleteWordCommand(update tgbotapi.Update) string {
+	state := model.NewUserState(update.Message.From.ID, model.DelWord)
+
+	if err := h.UseCases.UserStateUC.Set(state); err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
+		return errMsgText
+	}
+	return h.Msg.Info.DelWord
+}
+
 func (h *Handlers) SaveWord(update tgbotapi.Update) string {
 	req := dto.NewAddWordRequest(update.Message.From.ID, update.Message.Text)
 	word, err := req.ToDomainWord()
