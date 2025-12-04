@@ -5,6 +5,7 @@ import (
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"langbrv/internal/core/repository"
+	"strings"
 	"time"
 )
 
@@ -52,12 +53,14 @@ func (uc *WordUC) FormatDictionary(words []model.Word) (string, error) {
 		return "", apperrors.ErrNoWordsInDictionary
 	}
 
-	dictionary := "Твой словарь:\n"
+	//TODO: добавить предворительное выделение памяти
+	var sb strings.Builder
+	sb.WriteString("Твой словарь:\n")
 
 	for idx, word := range words {
-		dictionary += fmt.Sprintf("%d. %s - %s\n", idx+1, word.Original, word.Translation)
+		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
 	}
-	return dictionary, nil
+	return sb.String(), nil
 }
 
 func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {
@@ -73,10 +76,11 @@ func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {
 		return "", apperrors.ErrNoWordsToRemind
 	}
 
-	remindMsg := "Слова на повторение:\n"
+	var sb strings.Builder
+	sb.WriteString("Слова на повторение:\n")
 
 	for idx, word := range words {
-		remindMsg += fmt.Sprintf("%d. %s - %s\n", idx+1, word.Original, word.Translation)
+		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
 	}
-	return remindMsg, nil
+	return sb.String(), nil
 }
