@@ -91,13 +91,21 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 
 func (b *Bot) handleMessages(update tgbotapi.Update) {
 	userState, err := b.handlers.UseCases.UserStateUC.Get(update.Message.From.ID)
-	if err != nil {
+	if err != nil || userState == nil {
+		logrus.Error(err)
+		msgText := b.handlers.Msg.Errors.UnknownMsg
+		b.sendMessage(update, msgText)
 		return
 	}
 
 	switch userState.State {
+
 	case model.AddWord:
 		msgText := b.handlers.SaveWord(update)
+		b.sendMessage(update, msgText)
+
+	default:
+		msgText := b.handlers.Msg.Errors.UnknownMsg
 		b.sendMessage(update, msgText)
 	}
 }
