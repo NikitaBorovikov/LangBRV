@@ -12,5 +12,6 @@ messages:
       unknown_msg: "Не понимаю тебя :("
       no_words: "В словаре пока нет слов.\nЧтобы добавить слово напиши /add_word"
       no_words_to_remind: "Сегодня нет слов на повторение"
+      word_not_exists: "Такого слова нет в твоем словаре"
 telegram:
   update_timeout: 30

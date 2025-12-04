@@ -51,6 +51,7 @@ type Errors struct {
 	UnknownMsg      string `yaml:"unknown_msg"`
 	NoWords         string `yaml:"no_words"`
 	NoWordsToRemind string `yaml:"no_words_to_remind"`
+	WordNotExists   string `yaml:"word_not_exists"`
 }
 
 func InitConfig() (*Config, error) {
