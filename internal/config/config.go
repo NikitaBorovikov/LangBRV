@@ -37,6 +37,7 @@ type Messages struct {
 type Info struct {
 	Start   string `yaml:"start"`
 	AddWord string `yaml:"add_word"`
+	DelWord string `yaml:"del_word"`
 }
 
 type Success struct {
