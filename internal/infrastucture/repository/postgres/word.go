@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"errors"
+	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 
 	"gorm.io/gorm"
@@ -56,4 +57,15 @@ func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 func (r *WordRepo) Update(word *model.Word) error {
 	result := r.db.Model(word).Where("id = ?", word.ID).Update("last_seen", word.LastSeen)
 	return result.Error
+}
+
+func (r *WordRepo) DeleteWord(userID int64, word string) error {
+	result := r.db.Where("user_id = ? AND original = ?", userID, word).Or("user_id = ? AND translation = ?", userID, word).Delete(&model.Word{})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return apperrors.ErrWordNotFound
+	}
+	return nil
 }

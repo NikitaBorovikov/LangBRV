@@ -8,4 +8,5 @@ type WordRepo interface {
 	FindByUserAndWord(userID int64, word string) (*model.Word, error)
 	GetRemindList(userID int64) ([]model.Word, error)
 	Update(word *model.Word) error
+	DeleteWord(userID int64, word string) error
 }

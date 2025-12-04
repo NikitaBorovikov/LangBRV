@@ -4,6 +4,7 @@ type State string
 
 const (
 	AddWord State = "ADD_WORD"
+	DelWord State = "DEL_WORD"
 )
 
 type UserState struct {

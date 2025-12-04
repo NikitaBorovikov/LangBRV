@@ -15,6 +15,7 @@ const (
 	AddWordCommand       = "add_word"
 	GetDictionaryCommand = "dictionary"
 	RemindCommand        = "remind"
+	DeleteWordCommand    = "del_word"
 )
 
 type Bot struct {
@@ -80,8 +81,12 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 		b.sendMessage(update, msgText)
 
 	case RemindCommand:
-		msgTest := b.handlers.GetRemindListCommand(update)
-		b.sendMessage(update, msgTest)
+		msgText := b.handlers.GetRemindListCommand(update)
+		b.sendMessage(update, msgText)
+
+	case DeleteWordCommand:
+		msgText := b.handlers.DeleteWordCommand(update)
+		b.sendMessage(update, msgText)
 
 	default:
 		msgText := b.handlers.Msg.Errors.UnknownCommand
@@ -102,6 +107,10 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 
 	case model.AddWord:
 		msgText := b.handlers.SaveWord(update)
+		b.sendMessage(update, msgText)
+
+	case model.DelWord:
+		msgText := b.handlers.DeleteWord(update)
 		b.sendMessage(update, msgText)
 
 	default:

@@ -5,6 +5,7 @@ import (
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"langbrv/internal/core/repository"
+	"langbrv/internal/infrastucture/transport/tgBot/dto"
 	"strings"
 	"time"
 )
@@ -46,6 +47,17 @@ func (uc *WordUC) GetAll(userID int64) ([]model.Word, error) {
 		return nil, err
 	}
 	return words, err
+}
+
+func (uc *WordUC) DeleteWord(userID int64, word string) error {
+	if err := dto.ValidateWord(word); err != nil {
+		return err
+	}
+
+	if err := uc.WordRepo.DeleteWord(userID, word); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (uc *WordUC) FormatDictionary(words []model.Word) (string, error) {
