@@ -51,21 +51,21 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 		if update.Message == nil {
 			continue
 		}
+
+		start := time.Now()
+
 		if update.Message.IsCommand() {
 			b.handleCommands(update)
 		} else {
 			b.handleMessages(update)
 		}
+
+		duration := time.Since(start)
+		logrus.Infof("Request duration: %v", duration)
 	}
 }
 
 func (b *Bot) handleCommands(update tgbotapi.Update) {
-	start := time.Now()
-	defer func() {
-		duration := time.Since(start)
-		logrus.Infof("Duration: %v", duration)
-	}()
-
 	switch update.Message.Command() {
 
 	case StartCommand:
