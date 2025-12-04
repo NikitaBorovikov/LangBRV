@@ -48,6 +48,17 @@ func (uc *WordUC) GetAll(userID int64) ([]model.Word, error) {
 	return words, err
 }
 
+func (uc *WordUC) DeleteWord(userID int64, word string) error {
+	if len(word) >= 255 {
+		return apperrors.ErrNoWordsInDictionary // Replace error
+	}
+
+	if err := uc.WordRepo.DeleteWord(userID, word); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (uc *WordUC) FormatDictionary(words []model.Word) (string, error) {
 	if len(words) == 0 {
 		return "", apperrors.ErrNoWordsInDictionary
