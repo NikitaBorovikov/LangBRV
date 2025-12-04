@@ -109,6 +109,10 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 		msgText := b.handlers.SaveWord(update)
 		b.sendMessage(update, msgText)
 
+	case model.DelWord:
+		msgText := b.handlers.DeleteWord(update)
+		b.sendMessage(update, msgText)
+
 	default:
 		msgText := b.handlers.Msg.Errors.UnknownMsg
 		b.sendMessage(update, msgText)

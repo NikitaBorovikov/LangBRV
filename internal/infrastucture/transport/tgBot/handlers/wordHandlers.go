@@ -83,3 +83,12 @@ func (h *Handlers) SaveWord(update tgbotapi.Update) string {
 	logrus.Infof("word is saved: id = %s", wordID)
 	return h.Msg.Success.WordAdded
 }
+
+func (h *Handlers) DeleteWord(update tgbotapi.Update) string {
+	if err := h.UseCases.WordUC.DeleteWord(update.Message.From.ID, update.Message.Text); err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
+		return errMsgText
+	}
+	return h.Msg.Success.WordDeleted
+}
