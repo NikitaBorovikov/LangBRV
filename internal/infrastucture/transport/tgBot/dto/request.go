@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"fmt"
+	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"strings"
 	"time"
@@ -33,23 +33,25 @@ func NewAddWordRequest(userID int64, msg string) *AddWordRequest {
 
 func (r *AddWordRequest) ToDomainWord() (*model.Word, error) {
 	record := strings.Split(strings.ToLower(r.Msg), "-")
-
-	if r.UserID == 0 {
-		return nil, fmt.Errorf("невалидный userID")
-	}
-
 	if len(record) != 2 {
-		return nil, fmt.Errorf("слова должны быть разделены черточкой")
+		return nil, apperrors.ErrMissingSeparator
 	}
 
-	if len(record[0]) >= 255 || len(record[1]) >= 255 {
-		return nil, fmt.Errorf("слова слишком длинные")
+	original := strings.TrimSpace(record[0])
+	translate := strings.TrimSpace(record[1])
+
+	if err := ValidateWord(original); err != nil {
+		return nil, err
+	}
+
+	if err := ValidateWord(translate); err != nil {
+		return nil, err
 	}
 
 	word := &model.Word{
 		UserID:      r.UserID,
-		Original:    strings.TrimSpace(record[0]),
-		Translation: strings.TrimSpace(record[1]),
+		Original:    original,
+		Translation: translate,
 		LastSeen:    time.Now(),
 	}
 	return word, nil
