@@ -67,7 +67,7 @@ func (uc *WordUC) FormatDictionary(words []model.Word) (string, error) {
 
 	//TODO: добавить предворительное выделение памяти
 	var sb strings.Builder
-	sb.WriteString("Твой словарь:\n")
+	sb.WriteString("📚 Твой словарь:\n")
 
 	for idx, word := range words {
 		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
@@ -89,7 +89,7 @@ func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {
 	}
 
 	var sb strings.Builder
-	sb.WriteString("Слова на повторение:\n")
+	sb.WriteString("🌀 Слова на повторение:\n")
 
 	for idx, word := range words {
 		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
