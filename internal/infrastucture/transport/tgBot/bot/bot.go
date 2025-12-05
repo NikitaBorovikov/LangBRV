@@ -12,7 +12,7 @@ import (
 
 const (
 	StartCommand         = "start"
-	AddWordCommand       = "add_word"
+	AddWordCommand       = "add"
 	GetDictionaryCommand = "dictionary"
 	RemindCommand        = "remind"
 	DeleteWordCommand    = "del_word"
