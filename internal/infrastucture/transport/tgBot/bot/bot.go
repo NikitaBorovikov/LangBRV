@@ -16,6 +16,9 @@ const (
 	GetDictionaryCommand = "dictionary"
 	RemindCommand        = "remind"
 	DeleteWordCommand    = "del_word"
+
+	NextPageCallback     = "nextPage"
+	PreviousPageCallback = "previousPage"
 )
 
 type Bot struct {
@@ -48,49 +51,52 @@ func (b *Bot) Start() {
 
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
-		if update.Message == nil {
-			continue
+		if update.Message != nil {
+			start := time.Now()
+			if update.Message.IsCommand() {
+				b.handleCommands(update)
+			} else {
+				b.handleMessages(update)
+			}
+			duration := time.Since(start)
+			logrus.Infof("Request duration: %v", duration)
+
+		} else if update.CallbackQuery != nil {
+			start := time.Now()
+			b.handleCallbacks(update)
+			duration := time.Since(start)
+			logrus.Infof("Request duration: %v", duration)
 		}
-
-		start := time.Now()
-
-		if update.Message.IsCommand() {
-			b.handleCommands(update)
-		} else {
-			b.handleMessages(update)
-		}
-
-		duration := time.Since(start)
-		logrus.Infof("Request duration: %v", duration)
 	}
 }
 
 func (b *Bot) handleCommands(update tgbotapi.Update) {
 	switch update.Message.Command() {
-
 	case StartCommand:
 		msgText := b.handlers.StartCommand(update)
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case AddWordCommand:
 		msgText := b.handlers.AddWordCommand(update)
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case GetDictionaryCommand:
-		msgText := b.handlers.GetDictionaryCommand(update)
-		b.sendMessage(update, msgText)
+		msgText, pageInfo := b.handlers.GetDictionaryCommand(update)
+		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+		msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboard)
+		pageInfo.DictionaryMsgID = msgID
 
 	case RemindCommand:
 		msgText := b.handlers.GetRemindListCommand(update)
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case DeleteWordCommand:
 		msgText := b.handlers.DeleteWordCommand(update)
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	default:
 		msgText := b.handlers.Msg.Errors.UnknownCommand
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 	}
 }
 
@@ -99,29 +105,65 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 	if err != nil || userState == nil {
 		logrus.Error(err)
 		msgText := b.handlers.Msg.Errors.UnknownMsg
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 		return
 	}
 
 	switch userState.State {
-
 	case model.AddWord:
 		msgText := b.handlers.SaveWord(update)
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case model.DelWord:
 		msgText := b.handlers.DeleteWord(update)
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	default:
 		msgText := b.handlers.Msg.Errors.UnknownMsg
-		b.sendMessage(update, msgText)
+		b.sendMessage(update.Message.Chat.ID, msgText)
 	}
 }
 
-func (b *Bot) sendMessage(update tgbotapi.Update, text string) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+func (b *Bot) handleCallbacks(update tgbotapi.Update) {
+	switch update.CallbackQuery.Data {
+	case NextPageCallback:
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Next)
+		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
+
+	case PreviousPageCallback:
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Previous)
+		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
+
+	default:
+		msgText := b.handlers.Msg.Errors.Unknown
+		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
+	}
+}
+
+func (b *Bot) sendMessage(chatID int64, text string) {
+	msg := tgbotapi.NewMessage(chatID, text)
 	if _, err := b.bot.Send(msg); err != nil {
-		logrus.Errorf("failed to send message to chat id: %d, err: %v", update.Message.Chat.ID, err)
+		logrus.Errorf("failed to send message to chat id: %d, err: %v", chatID, err)
+	}
+}
+
+func (b *Bot) sendMessageWithKeyboard(chatID int64, text string, keyboard tgbotapi.InlineKeyboardMarkup) int {
+	msg := tgbotapi.NewMessage(chatID, text)
+	msg.ReplyMarkup = keyboard
+	msgInfo, err := b.bot.Send(msg)
+	if err != nil {
+		logrus.Errorf("failed to send message to chat id: %d, err: %v", chatID, err)
+		return 0
+	}
+	return msgInfo.MessageID
+}
+
+func (b *Bot) updateDictionaryMsg(chatID int64, msgID int, text string, keyboard tgbotapi.InlineKeyboardMarkup) {
+	msg := tgbotapi.NewEditMessageText(chatID, msgID, text)
+	msg.ReplyMarkup = &keyboard
+	if _, err := b.bot.Send(msg); err != nil {
+		logrus.Errorf("failed to update message to chat id: %d, err: %v", chatID, err)
 	}
 }

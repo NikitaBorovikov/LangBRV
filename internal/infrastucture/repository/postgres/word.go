@@ -23,10 +23,26 @@ func (r *WordRepo) Add(word *model.Word) (string, error) {
 	return word.ID, result.Error
 }
 
-func (r *WordRepo) GetAll(userID int64) ([]model.Word, error) {
+func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum, wordsPerPage int64) ([]model.Word, error) {
 	var words []model.Word
-	result := r.db.Where("user_id = ?", userID).Order("last_seen DESC").Find(&words)
-	return words, result.Error
+	offset := (pageNum - 1) * wordsPerPage
+
+	err := r.db.Where("user_id = ?", userID).Order("last_seen DESC").Offset(int(offset)).Limit(int(wordsPerPage)).Find(&words).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return words, nil
+}
+
+func (r *WordRepo) GetAmountOfWords(userID int64) (int64, error) {
+	var wordsAmount int64
+
+	err := r.db.Model(&model.Word{}).Where("user_id = ?", userID).Count(&wordsAmount).Error
+	if err != nil {
+		return 0, err
+	}
+	return wordsAmount, nil
 }
 
 func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, error) {
@@ -59,7 +75,7 @@ func (r *WordRepo) Update(word *model.Word) error {
 	return result.Error
 }
 
-func (r *WordRepo) DeleteWord(userID int64, word string) error {
+func (r *WordRepo) Delete(userID int64, word string) error {
 	result := r.db.Where("user_id = ? AND original = ?", userID, word).Or("user_id = ? AND translation = ?", userID, word).Delete(&model.Word{})
 	if result.Error != nil {
 		return result.Error

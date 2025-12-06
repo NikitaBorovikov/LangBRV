@@ -41,38 +41,15 @@ func (uc *WordUC) Add(word *model.Word) (string, error) {
 	return wordID, nil
 }
 
-func (uc *WordUC) GetAll(userID int64) ([]model.Word, error) {
-	words, err := uc.WordRepo.GetAll(userID)
-	if err != nil {
-		return nil, err
-	}
-	return words, err
-}
-
-func (uc *WordUC) DeleteWord(userID int64, word string) error {
+func (uc *WordUC) Delete(userID int64, word string) error {
 	if err := dto.ValidateWord(word); err != nil {
 		return err
 	}
 
-	if err := uc.WordRepo.DeleteWord(userID, word); err != nil {
+	if err := uc.WordRepo.Delete(userID, word); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (uc *WordUC) FormatDictionary(words []model.Word) (string, error) {
-	if len(words) == 0 {
-		return "", apperrors.ErrNoWordsInDictionary
-	}
-
-	//TODO: добавить предворительное выделение памяти
-	var sb strings.Builder
-	sb.WriteString("📚 Твой словарь:\n")
-
-	for idx, word := range words {
-		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
-	}
-	return sb.String(), nil
 }
 
 func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {
@@ -89,10 +66,11 @@ func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {
 	}
 
 	var sb strings.Builder
+	sb.Grow(expectedPageSize)
 	sb.WriteString("🌀 Слова на повторение:\n")
 
-	for idx, word := range words {
-		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
+	for _, word := range words {
+		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)
 	}
 	return sb.String(), nil
 }

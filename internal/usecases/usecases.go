@@ -5,15 +5,17 @@ import (
 )
 
 type UseCases struct {
-	UserUC      *UserUC
-	WordUC      *WordUC
-	UserStateUC *UserStateUC
+	UserUC           *UserUC
+	WordUC           *WordUC
+	UserStateUC      *UserStateUC
+	DictionaryPageUC *DictionaryPageUC
 }
 
 func NewUseCases(r *repo.Repository) *UseCases {
 	return &UseCases{
-		UserUC:      NewUserUC(r.UserRepo),
-		WordUC:      NewWordUC(r.WordRepo),
-		UserStateUC: NewUserStateUC(r.UserStateRepo),
+		UserUC:           NewUserUC(r.UserRepo),
+		WordUC:           NewWordUC(r.WordRepo),
+		UserStateUC:      NewUserStateUC(r.UserStateRepo),
+		DictionaryPageUC: NewDictionaryPageUC(r.DictionaryPageRepo, r.WordRepo),
 	}
 }
