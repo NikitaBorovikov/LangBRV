@@ -20,23 +20,6 @@ func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
 	return h.Msg.Info.AddWord
 }
 
-func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) string {
-	words, err := h.UseCases.WordUC.GetDictionaryWordsByPage(update.Message.From.ID, 1)
-	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText
-	}
-
-	dictionaryPage, err := h.UseCases.WordUC.FormatDictionaryPage(words, 1)
-	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText
-	}
-	return dictionaryPage
-}
-
 func (h *Handlers) GetRemindListCommand(update tgbotapi.Update) string {
 	remindList, err := h.UseCases.WordUC.GetRemindList(update.Message.From.ID)
 	if err != nil {

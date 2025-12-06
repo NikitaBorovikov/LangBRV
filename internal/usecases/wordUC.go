@@ -41,14 +41,6 @@ func (uc *WordUC) Add(word *model.Word) (string, error) {
 	return wordID, nil
 }
 
-func (uc *WordUC) GetDictionaryWordsByPage(userID int64, pageNum int) ([]model.Word, error) {
-	words, err := uc.WordRepo.GetDictionaryWordsByPage(userID, pageNum)
-	if err != nil {
-		return nil, err
-	}
-	return words, err
-}
-
 func (uc *WordUC) DeleteWord(userID int64, word string) error {
 	if err := dto.ValidateWord(word); err != nil {
 		return err
@@ -58,22 +50,6 @@ func (uc *WordUC) DeleteWord(userID int64, word string) error {
 		return err
 	}
 	return nil
-}
-
-func (uc *WordUC) FormatDictionaryPage(words []model.Word, pageNum int) (string, error) {
-	if len(words) == 0 {
-		return "", apperrors.ErrNoWordsInDictionary
-	}
-
-	//TODO: добавить предворительное выделение памяти
-	var sb strings.Builder
-	sb.WriteString("📚 Твой словарь:")
-	fmt.Fprintf(&sb, " (Страница %d)\n", pageNum)
-
-	for idx, word := range words {
-		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
-	}
-	return sb.String(), nil
 }
 
 func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {

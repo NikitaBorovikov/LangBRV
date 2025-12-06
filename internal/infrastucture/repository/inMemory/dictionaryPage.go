@@ -17,7 +17,7 @@ func NewDictionaryPageRepo() *DictionaryPageRepo {
 	}
 }
 
-func (r *DictionaryPageRepo) Set(page *model.DictionaryPage) error {
+func (r *DictionaryPageRepo) Save(page *model.DictionaryPage) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

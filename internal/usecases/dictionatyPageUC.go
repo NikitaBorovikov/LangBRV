@@ -1,0 +1,51 @@
+package usecases
+
+import (
+	"fmt"
+	apperrors "langbrv/internal/app_errors"
+	"langbrv/internal/core/model"
+	"langbrv/internal/core/repository"
+	"strings"
+)
+
+type DictionaryPageUC struct {
+	DictionaryPageRepo repository.DictionaryPageRepo
+	WordRepo           repository.WordRepo
+}
+
+func NewDictionaryPageUC(pr repository.DictionaryPageRepo, wr repository.WordRepo) *DictionaryPageUC {
+	return &DictionaryPageUC{
+		DictionaryPageRepo: pr,
+		WordRepo:           wr,
+	}
+}
+
+func (uc *DictionaryPageUC) FormatDictionaryPage(pageInfo *model.DictionaryPage) (string, error) {
+	words, err := uc.WordRepo.GetDictionaryWordsByPage(pageInfo.UserID, pageInfo.CurrentPage)
+	if err != nil {
+		return "", err
+	}
+
+	if len(words) == 0 {
+		return "", apperrors.ErrNoWordsInDictionary
+	}
+	pageInfo.Words = words
+
+	//TODO: добавить предворительное выделение памяти
+	var sb strings.Builder
+	sb.WriteString("📚 Твой словарь:")
+	fmt.Fprintf(&sb, " (Страница %d)\n", pageInfo.CurrentPage)
+
+	for idx, word := range pageInfo.Words {
+		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
+	}
+	return sb.String(), nil
+}
+
+func (uc *DictionaryPageUC) Save(page *model.DictionaryPage) error {
+	return uc.DictionaryPageRepo.Save(page)
+}
+
+func (uc *DictionaryPageUC) Get(userID int64) (*model.DictionaryPage, error) {
+	return uc.DictionaryPageRepo.Get(userID)
+}
