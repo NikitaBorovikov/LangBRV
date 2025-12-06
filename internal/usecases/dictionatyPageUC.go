@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	wordsPerPage int64 = 5
+	wordsPerPage     int64 = 5
+	expectedPageSize int   = 700 // примерный размер одной страницы словаря в байтах
 )
 
 type DictionaryPageUC struct {
@@ -35,8 +36,9 @@ func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, 
 	}
 	pageInfo.Words = words
 
-	//TODO: добавить предворительное выделение памяти
 	var sb strings.Builder
+	sb.Grow(expectedPageSize)
+
 	sb.WriteString("📚 Твой словарь:")
 	fmt.Fprintf(&sb, " (Страница %d/%d)\n", pageInfo.CurrentPage, pageInfo.TotalPages)
 
