@@ -41,8 +41,8 @@ func (uc *WordUC) Add(word *model.Word) (string, error) {
 	return wordID, nil
 }
 
-func (uc *WordUC) GetAll(userID int64) ([]model.Word, error) {
-	words, err := uc.WordRepo.GetAll(userID)
+func (uc *WordUC) GetDictionaryWordsByPage(userID int64, pageNum int) ([]model.Word, error) {
+	words, err := uc.WordRepo.GetDictionaryWordsByPage(userID, pageNum)
 	if err != nil {
 		return nil, err
 	}
@@ -60,14 +60,15 @@ func (uc *WordUC) DeleteWord(userID int64, word string) error {
 	return nil
 }
 
-func (uc *WordUC) FormatDictionary(words []model.Word) (string, error) {
+func (uc *WordUC) FormatDictionaryPage(words []model.Word, pageNum int) (string, error) {
 	if len(words) == 0 {
 		return "", apperrors.ErrNoWordsInDictionary
 	}
 
 	//TODO: добавить предворительное выделение памяти
 	var sb strings.Builder
-	sb.WriteString("📚 Твой словарь:\n")
+	sb.WriteString("📚 Твой словарь:")
+	fmt.Fprintf(&sb, " (Страница %d)\n", pageNum)
 
 	for idx, word := range words {
 		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
