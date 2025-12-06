@@ -7,7 +7,7 @@ const (
 type DictionaryPage struct {
 	UserID      int64
 	CurrentPage int
-	TotalPages  int
+	TotalPages  int64
 	Words       []Word
 }
 

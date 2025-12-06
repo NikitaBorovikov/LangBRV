@@ -20,7 +20,7 @@ func NewDictionaryPageUC(pr repository.DictionaryPageRepo, wr repository.WordRep
 	}
 }
 
-func (uc *DictionaryPageUC) FormatDictionaryPage(pageInfo *model.DictionaryPage) (string, error) {
+func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, error) {
 	words, err := uc.WordRepo.GetDictionaryWordsByPage(pageInfo.UserID, pageInfo.CurrentPage)
 	if err != nil {
 		return "", err

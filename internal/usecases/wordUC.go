@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	wordsPerPage = 5
+)
+
 type WordUC struct {
 	WordRepo repository.WordRepo
 }
@@ -41,7 +45,7 @@ func (uc *WordUC) Add(word *model.Word) (string, error) {
 	return wordID, nil
 }
 
-func (uc *WordUC) DeleteWord(userID int64, word string) error {
+func (uc *WordUC) Delete(userID int64, word string) error {
 	if err := dto.ValidateWord(word); err != nil {
 		return err
 	}
@@ -50,6 +54,20 @@ func (uc *WordUC) DeleteWord(userID int64, word string) error {
 		return err
 	}
 	return nil
+}
+
+func (uc *WordUC) GetAmountOfPages(userID int64) (int64, error) {
+	amountOfWords, err := uc.WordRepo.GetAmountOfWords(userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if amountOfWords == 0 {
+		return 0, apperrors.ErrNoWordsInDictionary
+	}
+
+	totalPages := (amountOfWords + wordsPerPage - 1) / wordsPerPage
+	return totalPages, nil
 }
 
 func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {

@@ -68,7 +68,7 @@ func (h *Handlers) SaveWord(update tgbotapi.Update) string {
 }
 
 func (h *Handlers) DeleteWord(update tgbotapi.Update) string {
-	if err := h.UseCases.WordUC.DeleteWord(update.Message.From.ID, update.Message.Text); err != nil {
+	if err := h.UseCases.WordUC.Delete(update.Message.From.ID, update.Message.Text); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText
