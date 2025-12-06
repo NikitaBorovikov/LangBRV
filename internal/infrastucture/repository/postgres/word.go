@@ -80,7 +80,7 @@ func (r *WordRepo) Update(word *model.Word) error {
 	return result.Error
 }
 
-func (r *WordRepo) DeleteWord(userID int64, word string) error {
+func (r *WordRepo) Delete(userID int64, word string) error {
 	result := r.db.Where("user_id = ? AND original = ?", userID, word).Or("user_id = ? AND translation = ?", userID, word).Delete(&model.Word{})
 	if result.Error != nil {
 		return result.Error
