@@ -28,7 +28,7 @@ func (r *WordRepo) Add(word *model.Word) (string, error) {
 	return word.ID, result.Error
 }
 
-func (r *WordRepo) GetDictionaryWordsByPage(userID int64, pageNum int) ([]model.Word, error) {
+func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum int64) ([]model.Word, error) {
 	var words []model.Word
 	offset := (pageNum - 1) * wordsPerPage
 

@@ -40,7 +40,7 @@ func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) (string, Diction
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText, ""
 	}
-	pageStatus := DeterminePageStatus(int64(page.CurrentPage), page.TotalPages)
+	pageStatus := DeterminePageStatus(page.CurrentPage, page.TotalPages)
 	return formatedPage, pageStatus
 }
 
