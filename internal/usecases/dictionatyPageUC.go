@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+const (
+	wordsPerPage int64 = 5
+)
+
 type DictionaryPageUC struct {
 	DictionaryPageRepo repository.DictionaryPageRepo
 	WordRepo           repository.WordRepo
@@ -21,7 +25,7 @@ func NewDictionaryPageUC(pr repository.DictionaryPageRepo, wr repository.WordRep
 }
 
 func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, error) {
-	words, err := uc.WordRepo.GetDictionaryWordsByPage(pageInfo.UserID, pageInfo.CurrentPage)
+	words, err := uc.WordRepo.GetDictionaryWordsByPage(pageInfo.UserID, pageInfo.CurrentPage, wordsPerPage)
 	if err != nil {
 		return "", err
 	}
@@ -40,6 +44,20 @@ func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, 
 		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
 	}
 	return sb.String(), nil
+}
+
+func (uc *DictionaryPageUC) GetAmountOfPages(userID int64) (int64, error) {
+	amountOfWords, err := uc.WordRepo.GetAmountOfWords(userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if amountOfWords == 0 {
+		return 0, apperrors.ErrNoWordsInDictionary
+	}
+
+	totalPages := (amountOfWords + wordsPerPage - 1) / wordsPerPage
+	return totalPages, nil
 }
 
 func (uc *DictionaryPageUC) Save(page *model.DictionaryPage) error {

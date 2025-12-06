@@ -20,7 +20,7 @@ const (
 func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) (string, DictionaryPageStatus) {
 	page := model.NewDictionaryPage(update.Message.From.ID)
 
-	totalPages, err := h.UseCases.WordUC.GetAmountOfPages(page.UserID)
+	totalPages, err := h.UseCases.DictionaryPageUC.GetAmountOfPages(page.UserID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)

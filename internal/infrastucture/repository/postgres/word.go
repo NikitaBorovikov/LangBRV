@@ -8,11 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// REMOVE: for testing
-const (
-	wordsPerPage = 5
-)
-
 type WordRepo struct {
 	db *gorm.DB
 }
@@ -28,11 +23,11 @@ func (r *WordRepo) Add(word *model.Word) (string, error) {
 	return word.ID, result.Error
 }
 
-func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum int64) ([]model.Word, error) {
+func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum, wordsPerPage int64) ([]model.Word, error) {
 	var words []model.Word
 	offset := (pageNum - 1) * wordsPerPage
 
-	err := r.db.Where("user_id = ?", userID).Order("last_seen DESC").Offset(int(offset)).Limit(wordsPerPage).Find(&words).Error
+	err := r.db.Where("user_id = ?", userID).Order("last_seen DESC").Offset(int(offset)).Limit(int(wordsPerPage)).Find(&words).Error
 	if err != nil {
 		return nil, err
 	}
