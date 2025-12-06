@@ -40,8 +40,8 @@ func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, 
 	sb.WriteString("📚 Твой словарь:")
 	fmt.Fprintf(&sb, " (Страница %d)\n", pageInfo.CurrentPage)
 
-	for idx, word := range pageInfo.Words {
-		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
+	for _, word := range pageInfo.Words {
+		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)
 	}
 	return sb.String(), nil
 }

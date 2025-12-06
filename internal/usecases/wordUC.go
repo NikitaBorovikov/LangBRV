@@ -68,8 +68,8 @@ func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {
 	var sb strings.Builder
 	sb.WriteString("🌀 Слова на повторение:\n")
 
-	for idx, word := range words {
-		fmt.Fprintf(&sb, "%d. %s - %s\n", idx+1, word.Original, word.Translation)
+	for _, word := range words {
+		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)
 	}
 	return sb.String(), nil
 }
