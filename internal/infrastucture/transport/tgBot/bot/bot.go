@@ -81,11 +81,10 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case GetDictionaryCommand:
-		msgText, pageStatus := b.handlers.GetDictionaryCommand(update)
-		keyboard := ChooseDictionaryKeyboard(pageStatus)
+		msgText, pageInfo := b.handlers.GetDictionaryCommand(update)
+		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
 		msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboard)
-		page, _ := b.handlers.UseCases.DictionaryPageUC.Get(update.Message.From.ID)
-		page.DictionaryMsgID = msgID
+		pageInfo.DictionaryMsgID = msgID
 
 	case RemindCommand:
 		msgText := b.handlers.GetRemindListCommand(update)
@@ -128,14 +127,14 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	switch update.CallbackQuery.Data {
 	case NextPageCallback:
-		msgText, pageStatus, msgID := b.handlers.GetAnotherDictionaryPage(update, handlers.Next)
-		keyboard := ChooseDictionaryKeyboard(pageStatus)
-		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, msgID, msgText, keyboard)
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Next)
+		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
 
 	case PreviousPageCallback:
-		msgText, pageStatus, msgID := b.handlers.GetAnotherDictionaryPage(update, handlers.Previous)
-		keyboard := ChooseDictionaryKeyboard(pageStatus)
-		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, msgID, msgText, keyboard)
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Previous)
+		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
 
 	default:
 		msgText := b.handlers.Msg.Errors.Unknown

@@ -38,7 +38,7 @@ func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, 
 	//TODO: добавить предворительное выделение памяти
 	var sb strings.Builder
 	sb.WriteString("📚 Твой словарь:")
-	fmt.Fprintf(&sb, " (Страница %d)\n", pageInfo.CurrentPage)
+	fmt.Fprintf(&sb, " (Страница %d/%d)\n", pageInfo.CurrentPage, pageInfo.TotalPages)
 
 	for _, word := range pageInfo.Words {
 		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)

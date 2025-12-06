@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"langbrv/internal/infrastucture/transport/tgBot/handlers"
+	"langbrv/internal/core/model"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -16,8 +16,8 @@ var FirstDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var MiddleDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextPage"),
 		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousPage"),
+		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextPage"),
 	),
 )
 
@@ -27,14 +27,15 @@ var LastDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-func ChooseDictionaryKeyboard(pageStatus handlers.DictionaryPageStatus) tgbotapi.InlineKeyboardMarkup {
+func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) tgbotapi.InlineKeyboardMarkup {
 	switch pageStatus {
-	case handlers.FirstPage:
+	case model.FirstPage:
 		return FirstDictionaryPageKeyboard
-	case handlers.LastPage:
+	case model.LastPage:
 		return LastDictionaryPageKeyboard
-	case handlers.SinglePage:
+	case model.SinglePage:
 		return SingleDictionaryPageKeyboard
+	default:
+		return MiddleDictionaryPageKeyboard
 	}
-	return MiddleDictionaryPageKeyboard
 }

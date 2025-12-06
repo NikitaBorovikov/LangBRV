@@ -8,15 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type DictionaryPageStatus string
-
-const (
-	SinglePage DictionaryPageStatus = "SINGLE"
-	FirstPage  DictionaryPageStatus = "FIRST"
-	MiddlePage DictionaryPageStatus = "MIDDLE"
-	LastPage   DictionaryPageStatus = "LAST"
-)
-
 type PageNavigation string
 
 const (
@@ -24,39 +15,40 @@ const (
 	Previous PageNavigation = "PREVIOUS"
 )
 
-func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) (string, DictionaryPageStatus) {
+func (h *Handlers) GetDictionaryCommand(update tgbotapi.Update) (string, *model.DictionaryPage) {
 	page := model.NewDictionaryPage(update.Message.From.ID)
 
 	totalPages, err := h.UseCases.DictionaryPageUC.GetAmountOfPages(page.UserID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText, ""
+		return errMsgText, nil
 	}
 	page.TotalPages = totalPages
+
+	page.DetermineStatus()
 
 	if err := h.UseCases.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText, ""
+		return errMsgText, nil
 	}
 
 	formatedPage, err := h.UseCases.DictionaryPageUC.FormatPage(page)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText, ""
+		return errMsgText, nil
 	}
-	pageStatus := DeterminePageStatus(page.CurrentPage, page.TotalPages)
-	return formatedPage, pageStatus
+	return formatedPage, page
 }
 
-func (h *Handlers) GetAnotherDictionaryPage(update tgbotapi.Update, navigation PageNavigation) (string, DictionaryPageStatus, int) {
+func (h *Handlers) GetAnotherDictionaryPage(update tgbotapi.Update, navigation PageNavigation) (string, *model.DictionaryPage) {
 	page, err := h.UseCases.DictionaryPageUC.Get(update.CallbackQuery.From.ID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText, "", 0
+		return errMsgText, nil
 	}
 
 	if navigation == Next {
@@ -65,31 +57,19 @@ func (h *Handlers) GetAnotherDictionaryPage(update tgbotapi.Update, navigation P
 		page.CurrentPage--
 	}
 
+	page.DetermineStatus()
+
 	if err := h.UseCases.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText, "", 0
+		return errMsgText, nil
 	}
 
 	formatedPage, err := h.UseCases.DictionaryPageUC.FormatPage(page)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText, "", 0
+		return errMsgText, nil
 	}
-	pageStatus := DeterminePageStatus(page.CurrentPage, page.TotalPages)
-	return formatedPage, pageStatus, page.DictionaryMsgID
-}
-
-func DeterminePageStatus(currentPage, totalPages int64) DictionaryPageStatus {
-	switch {
-	case currentPage == 1 && totalPages == 1:
-		return SinglePage
-	case currentPage == 1 && totalPages > 1:
-		return FirstPage
-	case currentPage != 1 && currentPage == totalPages:
-		return LastPage
-	default:
-		return MiddlePage
-	}
+	return formatedPage, page
 }
