@@ -77,8 +77,9 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 		b.sendMessage(update, msgText)
 
 	case GetDictionaryCommand:
-		msgText := b.handlers.GetDictionaryCommand(update)
-		b.sendMessage(update, msgText)
+		msgText, pageStatus := b.handlers.GetDictionaryCommand(update)
+		keyboard := ChooseDictionaryKeyboard(pageStatus)
+		b.sendMessageWithKeyboard(update, msgText, keyboard)
 
 	case RemindCommand:
 		msgText := b.handlers.GetRemindListCommand(update)
@@ -121,6 +122,14 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 
 func (b *Bot) sendMessage(update tgbotapi.Update, text string) {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	if _, err := b.bot.Send(msg); err != nil {
+		logrus.Errorf("failed to send message to chat id: %d, err: %v", update.Message.Chat.ID, err)
+	}
+}
+
+func (b *Bot) sendMessageWithKeyboard(update tgbotapi.Update, text string, keyboard tgbotapi.InlineKeyboardMarkup) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	msg.ReplyMarkup = keyboard
 	if _, err := b.bot.Send(msg); err != nil {
 		logrus.Errorf("failed to send message to chat id: %d, err: %v", update.Message.Chat.ID, err)
 	}
