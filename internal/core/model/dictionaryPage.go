@@ -5,10 +5,11 @@ const (
 )
 
 type DictionaryPage struct {
-	UserID      int64
-	CurrentPage int64
-	TotalPages  int64
-	Words       []Word
+	UserID          int64
+	CurrentPage     int64
+	TotalPages      int64
+	DictionaryMsgID int
+	Words           []Word
 }
 
 func NewDictionaryPage(userID int64) *DictionaryPage {
