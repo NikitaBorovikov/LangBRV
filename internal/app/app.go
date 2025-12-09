@@ -3,15 +3,14 @@ package app
 import (
 	"fmt"
 	"langbrv/internal/config"
-	"langbrv/internal/core/model"
 	repo "langbrv/internal/infrastucture/repository"
 	"langbrv/internal/infrastucture/transport/tgBot/bot"
 	"langbrv/internal/infrastucture/transport/tgBot/handlers"
 	"langbrv/internal/usecases"
 
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
-	p "gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func Run() {
@@ -25,10 +24,6 @@ func Run() {
 		logrus.Fatalf("failed to init PostgreSQL: %v", err)
 	}
 
-	if err := db.AutoMigrate(&model.User{}, &model.Word{}); err != nil {
-		logrus.Fatalf("failed to run GORM migrate: %v", err)
-	}
-
 	repo := repo.NewRepository(db)
 	usecases := usecases.NewUseCases(repo)
 	handlers := handlers.NewHandlers(usecases, &cfg.Msg)
@@ -40,12 +35,20 @@ func Run() {
 	bot.Start()
 }
 
-func initPostgresDB(cfg *config.DB) (*gorm.DB, error) {
+func initPostgresDB(cfg *config.DB) (*sqlx.DB, error) {
 	dsn := makeDSN(cfg)
-	db, err := gorm.Open(p.Open(dsn))
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		return nil, err
+	}
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping DB: %v", err)
+	}
 	return db, err
 }
 
 func makeDSN(cfg *config.DB) string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=UTC", cfg.Host, cfg.User, cfg.Password, cfg.Name, cfg.Port)
+	return fmt.Sprintf(
+		"user=%s dbname=%s password=%s host=%s port=%d sslmode=disable", cfg.User, cfg.Name, cfg.Password, cfg.Host, cfg.Port,
+	)
 }
