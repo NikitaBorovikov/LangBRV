@@ -4,7 +4,7 @@ import (
 	inmemory "langbrv/internal/infrastucture/repository/inMemory"
 	"langbrv/internal/infrastucture/repository/postgres"
 
-	"gorm.io/gorm"
+	"github.com/jmoiron/sqlx"
 )
 
 type Repository struct {
@@ -14,7 +14,7 @@ type Repository struct {
 	DictionaryPageRepo *inmemory.DictionaryPageRepo
 }
 
-func NewRepository(db *gorm.DB) *Repository {
+func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		UserRepo:           postgres.NewUserRepo(db),
 		WordRepo:           postgres.NewWordRepo(db),

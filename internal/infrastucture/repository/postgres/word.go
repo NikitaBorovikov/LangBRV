@@ -1,45 +1,62 @@
 package postgres
 
 import (
-	"errors"
+	"database/sql"
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 
-	"gorm.io/gorm"
+	"github.com/jmoiron/sqlx"
 )
 
 type WordRepo struct {
-	db *gorm.DB
+	db *sqlx.DB
 }
 
-func NewWordRepo(db *gorm.DB) *WordRepo {
+func NewWordRepo(db *sqlx.DB) *WordRepo {
 	return &WordRepo{
 		db: db,
 	}
 }
 
 func (r *WordRepo) Add(word *model.Word) (string, error) {
-	result := r.db.Create(word)
-	return word.ID, result.Error
+	query := `INSERT INTO words (user_id, original, translation, last_seen, created_at)
+	VALUES (:user_id, :original, :translation, :last_seen, :created_at)
+	RETURNING id`
+
+	rows, err := r.db.NamedQuery(query, word)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		if err := rows.Scan(&word.ID); err != nil {
+			return "", err
+		}
+	}
+	return word.ID, err
 }
 
 func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum, wordsPerPage int64) ([]model.Word, error) {
 	var words []model.Word
 	offset := (pageNum - 1) * wordsPerPage
 
-	err := r.db.Where("user_id = ?", userID).Order("last_seen DESC").Offset(int(offset)).Limit(int(wordsPerPage)).Find(&words).Error
-	if err != nil {
+	query := `SELECT original, translation FROM words WHERE user_id = $1
+	ORDER BY last_seen DESC
+	LIMIT $2 OFFSET $3`
+
+	if err := r.db.Select(&words, query, userID, wordsPerPage, offset); err != nil {
 		return nil, err
 	}
-
 	return words, nil
 }
 
 func (r *WordRepo) GetAmountOfWords(userID int64) (int64, error) {
 	var wordsAmount int64
 
-	err := r.db.Model(&model.Word{}).Where("user_id = ?", userID).Count(&wordsAmount).Error
-	if err != nil {
+	query := `SELECT COUNT(*) FROM words WHERE user_id = $1`
+
+	if err := r.db.Get(&wordsAmount, query, userID); err != nil {
 		return 0, err
 	}
 	return wordsAmount, nil
@@ -48,10 +65,11 @@ func (r *WordRepo) GetAmountOfWords(userID int64) (int64, error) {
 func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, error) {
 	var existingWord model.Word
 
-	err := r.db.Where("user_id = ? AND original = ?", userID, word).First(&existingWord).Error
+	query := `SELECT * FROM words WHERE user_id = $1 AND original = $2 LIMIT 1`
 
+	err := r.db.Get(&existingWord, query, userID, word)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if err == sql.ErrNoRows {
 			return nil, nil // Если не нашли слово - это не ошибка
 		}
 		return nil, err
@@ -61,9 +79,12 @@ func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, er
 
 func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 	var remindWords []model.Word
-	remindIntervals := []int{1, 3, 10, 30, 90}
 
-	err := r.db.Where("user_id = ? AND ((CURRENT_DATE - last_seen::date) IN ?)", userID, remindIntervals).Order("last_seen ASC").Find(&remindWords).Error
+	query := `SELECT original, translation FROM words 
+	WHERE user_id = $1 AND CURRENT_DATE - last_seen::date IN (1, 3, 10, 30, 90)
+	ORDER BY last_seen ASC`
+
+	err := r.db.Select(&remindWords, query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -71,16 +92,25 @@ func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 }
 
 func (r *WordRepo) Update(word *model.Word) error {
-	result := r.db.Model(word).Where("id = ?", word.ID).Update("last_seen", word.LastSeen)
-	return result.Error
+	query := `UPDATE words SET last_seen = $1 WHERE id = $2`
+	_, err := r.db.Exec(query, word.LastSeen, word.ID)
+	return err
 }
 
 func (r *WordRepo) Delete(userID int64, word string) error {
-	result := r.db.Where("user_id = ? AND original = ?", userID, word).Or("user_id = ? AND translation = ?", userID, word).Delete(&model.Word{})
-	if result.Error != nil {
-		return result.Error
+	query := `DELETE FROM words WHERE user_id = $1 AND (original = $2 OR translation = $2)`
+
+	result, err := r.db.Exec(query, userID, word)
+	if err != nil {
+		return err
 	}
-	if result.RowsAffected == 0 {
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
 		return apperrors.ErrWordNotFound
 	}
 	return nil
