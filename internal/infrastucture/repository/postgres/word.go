@@ -41,7 +41,7 @@ func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum, wordsPerPage int64)
 	var words []model.Word
 	offset := (pageNum - 1) * wordsPerPage
 
-	query := `SELECT * FROM words WHERE user_id = $1
+	query := `SELECT original, translation FROM words WHERE user_id = $1
 	ORDER BY last_seen DESC
 	LIMIT $2 OFFSET $3`
 
@@ -54,9 +54,9 @@ func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum, wordsPerPage int64)
 func (r *WordRepo) GetAmountOfWords(userID int64) (int64, error) {
 	var wordsAmount int64
 
-	query := `SELECT COUNT(id) FROM words WHERE user_id = $1`
+	query := `SELECT COUNT(*) FROM words WHERE user_id = $1`
 
-	if err := r.db.QueryRow(query, userID).Scan(&wordsAmount); err != nil {
+	if err := r.db.Get(&wordsAmount, query, userID); err != nil {
 		return 0, err
 	}
 	return wordsAmount, nil
@@ -65,7 +65,7 @@ func (r *WordRepo) GetAmountOfWords(userID int64) (int64, error) {
 func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, error) {
 	var existingWord model.Word
 
-	query := `SELECT * FROM words WHERE user_id = $1 AND original = $2`
+	query := `SELECT * FROM words WHERE user_id = $1 AND original = $2 LIMIT 1`
 
 	err := r.db.Get(&existingWord, query, userID, word)
 	if err != nil {
@@ -80,7 +80,7 @@ func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, er
 func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 	var remindWords []model.Word
 
-	query := `SELECT * FROM words 
+	query := `SELECT original, translation FROM words 
 	WHERE user_id = $1 AND CURRENT_DATE - last_seen::date IN (1, 3, 10, 30, 90)
 	ORDER BY last_seen ASC`
 
