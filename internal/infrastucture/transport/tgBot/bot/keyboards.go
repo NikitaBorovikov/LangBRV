@@ -6,7 +6,11 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var SingleDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup()
+var SingleDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Добавить слово", "addWord"),
+	),
+)
 
 var FirstDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
