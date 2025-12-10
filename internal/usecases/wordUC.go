@@ -29,11 +29,13 @@ func (uc *WordUC) Add(word *model.Word) (string, error) {
 
 	// Если слово уже есть, то просто обновляем его с новым LastSeen полем
 	if existingWord != nil {
-		existingWord.LastSeen = time.Now()
+		existingWord.LastSeen = time.Now().UTC()
 		err := uc.WordRepo.Update(existingWord)
 		return existingWord.ID, err
 	}
 	// Если слова нет, то добавляем его
+	word.CreatedAt = time.Now().UTC()
+	word.LastSeen = time.Now().UTC()
 	wordID, err := uc.WordRepo.Add(word)
 	if err != nil {
 		return "", err
