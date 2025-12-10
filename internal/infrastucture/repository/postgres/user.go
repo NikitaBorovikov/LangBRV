@@ -18,9 +18,9 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 
 func (r *UserRepo) CreateOrUpdate(user *model.User) error {
 	query := `
-		INSERT INTO users (id, username, created_at) 
-		VALUES (:id, :username, :created_at)
-		ON CONFLICT (id) DO UPDATE 
+		INSERT INTO users (user_id, username, created_at) 
+		VALUES (:user_id, :username, :created_at)
+		ON CONFLICT (user_id) DO UPDATE 
 		SET created_at = EXCLUDED.created_at
 	`
 	_, err := r.db.NamedQuery(query, user)
@@ -30,7 +30,7 @@ func (r *UserRepo) CreateOrUpdate(user *model.User) error {
 func (r *UserRepo) GetByID(userID string) (*model.User, error) {
 	var user model.User
 
-	query := `SELECT * FROM users WHERE id = $1`
+	query := `SELECT * FROM users WHERE user_id = $1`
 
 	err := r.db.Get(&user, query, userID)
 	return &user, err
