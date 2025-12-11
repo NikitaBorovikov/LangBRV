@@ -39,6 +39,23 @@ services:
       timeout: 10s
       retries: 30
 
+  migrations:
+      image: migrate/migrate
+      profiles: ["migrate"]  
+      container_name: migrations
+      depends_on:
+        postgres:
+          condition: service_healthy
+      networks:
+        - fullstack
+      volumes:
+        - ./migrations:/migrations
+      command:
+        - "-path=/migrations"
+        - "-database=postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable"
+        - "up"
+      restart: "no"    
+  
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin_container
