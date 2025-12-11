@@ -3,6 +3,7 @@ FROM golang:1.24-alpine AS builder
 LABEL maintainer="Nikita Borovikov"
 
 RUN apk update && apk add --no-cache git
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 WORKDIR /app
 

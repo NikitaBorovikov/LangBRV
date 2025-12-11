@@ -4,7 +4,6 @@ import (
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"strings"
-	"time"
 )
 
 type RegistrationRequest struct {
@@ -52,7 +51,6 @@ func (r *AddWordRequest) ToDomainWord() (*model.Word, error) {
 		UserID:      r.UserID,
 		Original:    original,
 		Translation: translate,
-		LastSeen:    time.Now(),
 	}
 	return word, nil
 }

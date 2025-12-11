@@ -7,7 +7,7 @@ import (
 
 var (
 	ErrNoWordsInDictionary = errors.New("there are no words in the dictionary")
-	ErrNoWordsToRemind     = errors.New("there ate no words to remind")
+	ErrNoWordsToRemind     = errors.New("there are no words to remind")
 	ErrWordNotFound        = errors.New("such word is not found")
 
 	//validation error

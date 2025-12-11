@@ -21,7 +21,7 @@ func NewWordRepo(db *sqlx.DB) *WordRepo {
 func (r *WordRepo) Add(word *model.Word) (string, error) {
 	query := `INSERT INTO words (user_id, original, translation, last_seen, created_at)
 	VALUES (:user_id, :original, :translation, :last_seen, :created_at)
-	RETURNING id`
+	RETURNING word_id`
 
 	rows, err := r.db.NamedQuery(query, word)
 	if err != nil {
@@ -92,7 +92,7 @@ func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 }
 
 func (r *WordRepo) Update(word *model.Word) error {
-	query := `UPDATE words SET last_seen = $1 WHERE id = $2`
+	query := `UPDATE words SET last_seen = $1 WHERE word_id = $2`
 	_, err := r.db.Exec(query, word.LastSeen, word.ID)
 	return err
 }
