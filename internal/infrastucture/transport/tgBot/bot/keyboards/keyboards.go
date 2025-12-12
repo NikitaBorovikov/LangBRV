@@ -1,4 +1,4 @@
-package bot
+package keyboards
 
 import (
 	"langbrv/internal/core/model"
@@ -44,14 +44,14 @@ var LastDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) tgbotapi.InlineKeyboardMarkup {
+func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) interface{} {
 	switch pageStatus {
 	case model.FirstPage:
 		return FirstDictionaryPageKeyboard
 	case model.LastPage:
 		return LastDictionaryPageKeyboard
 	case model.SinglePage:
-		return AddWordKeyboard
+		return nil
 	default:
 		return MiddleDictionaryPageKeyboard
 	}

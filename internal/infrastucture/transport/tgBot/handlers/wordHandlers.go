@@ -3,6 +3,7 @@ package handlers
 import (
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
+	"langbrv/internal/infrastucture/transport/tgBot/bot/keyboards"
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
 
 	"github.com/sirupsen/logrus"
@@ -47,23 +48,23 @@ func (h *Handlers) DeleteWordCommand(userID int64) string {
 	return h.Msg.Info.DelWord
 }
 
-func (h *Handlers) SaveWord(userID int64, msgText string) string {
+func (h *Handlers) SaveWord(userID int64, msgText string) (string, interface{}) {
 	req := dto.NewAddWordRequest(userID, msgText)
 	word, err := req.ToDomainWord()
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText
+		return errMsgText, nil
 	}
 
 	wordID, err := h.UseCases.WordUC.Add(word)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
-		return errMsgText
+		return errMsgText, nil
 	}
 	logrus.Infof("word is saved: id = %s", wordID)
-	return h.Msg.Success.WordAdded
+	return h.Msg.Success.WordAdded, keyboards.MainKeyboard
 }
 
 func (h *Handlers) DeleteWord(userID int64, msgText string) string {
