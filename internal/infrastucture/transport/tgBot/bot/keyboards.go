@@ -6,9 +6,22 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var SingleDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var AddFirstWordKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Добавить первое слово", "addWord"),
+	),
+)
+
+var AddWordKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Добавить слово", "addWord"),
+	),
+)
+
+var MainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Добавить ещё", "addWord"),
+		tgbotapi.NewInlineKeyboardButtonData("Мой словарь", "getDictionary"),
 	),
 )
 
@@ -38,7 +51,7 @@ func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) tgbotapi.In
 	case model.LastPage:
 		return LastDictionaryPageKeyboard
 	case model.SinglePage:
-		return SingleDictionaryPageKeyboard
+		return AddWordKeyboard
 	default:
 		return MiddleDictionaryPageKeyboard
 	}

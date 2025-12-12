@@ -17,8 +17,10 @@ const (
 	RemindCommand        = "remind"
 	DeleteWordCommand    = "del_word"
 
-	NextPageCallback     = "nextPage"
-	PreviousPageCallback = "previousPage"
+	NextPageCallback      = "nextPage"
+	PreviousPageCallback  = "previousPage"
+	AddWordCallback       = "addWord"
+	GetDictionaryCallback = "getDictionary"
 )
 
 type Bot struct {
@@ -73,25 +75,33 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 func (b *Bot) handleCommands(update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case StartCommand:
-		msgText := b.handlers.StartCommand(update)
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		msgText := b.handlers.StartCommand(update.Message.From.ID, update.Message.From.UserName)
+		b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, AddFirstWordKeyboard)
 
 	case AddWordCommand:
-		msgText := b.handlers.AddWordCommand(update)
+		msgText := b.handlers.AddWordCommand(update.Message.From.ID)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case GetDictionaryCommand:
-		msgText, pageInfo := b.handlers.GetDictionaryCommand(update)
-		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
-		msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboard)
-		pageInfo.DictionaryMsgID = msgID
+		msgText, pageInfo := b.handlers.GetDictionaryCommand(update.Message.From.ID)
+		if pageInfo != nil {
+			keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+			msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboard)
+			pageInfo.DictionaryMsgID = msgID
+			return
+		}
+		if msgText == b.handlers.Msg.Errors.NoWords {
+			b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, AddWordKeyboard)
+			return
+		}
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case RemindCommand:
-		msgText := b.handlers.GetRemindListCommand(update)
+		msgText := b.handlers.GetRemindListCommand(update.Message.From.ID)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case DeleteWordCommand:
-		msgText := b.handlers.DeleteWordCommand(update)
+		msgText := b.handlers.DeleteWordCommand(update.Message.From.ID)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	default:
@@ -111,11 +121,15 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 
 	switch userState.State {
 	case model.AddWord:
-		msgText := b.handlers.SaveWord(update)
+		msgText := b.handlers.SaveWord(update.Message.From.ID, update.Message.Text)
+		if msgText == b.handlers.Msg.Success.WordAdded {
+			b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, MainKeyboard)
+			return
+		}
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case model.DelWord:
-		msgText := b.handlers.DeleteWord(update)
+		msgText := b.handlers.DeleteWord(update.Message.From.ID, update.Message.Text)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	default:
@@ -127,14 +141,32 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	switch update.CallbackQuery.Data {
 	case NextPageCallback:
-		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Next)
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, handlers.Next)
 		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
 		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
 
 	case PreviousPageCallback:
-		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Previous)
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, handlers.Previous)
 		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
 		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
+
+	case AddWordCallback:
+		msgText := b.handlers.AddWordCommand(update.CallbackQuery.From.ID)
+		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
+
+	case GetDictionaryCallback:
+		msgText, pageInfo := b.handlers.GetDictionaryCommand(update.CallbackQuery.From.ID)
+		if pageInfo != nil {
+			keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+			msgID := b.sendMessageWithKeyboard(update.CallbackQuery.Message.Chat.ID, msgText, keyboard)
+			pageInfo.DictionaryMsgID = msgID
+			return
+		}
+		if msgText == b.handlers.Msg.Errors.NoWords {
+			b.sendMessageWithKeyboard(update.CallbackQuery.Message.Chat.ID, msgText, AddWordKeyboard)
+			return
+		}
+		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
 
 	default:
 		msgText := b.handlers.Msg.Errors.Unknown
