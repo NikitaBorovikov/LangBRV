@@ -87,9 +87,13 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 			keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
 			msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboard)
 			pageInfo.DictionaryMsgID = msgID
-		} else {
-			b.sendMessage(update.Message.Chat.ID, msgText)
+			return
 		}
+		if msgText == b.handlers.Msg.Errors.NoWords {
+			b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, AddWordKeyboard)
+			return
+		}
+		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case RemindCommand:
 		msgText := b.handlers.GetRemindListCommand(update.Message.From.ID)

@@ -12,7 +12,7 @@ var AddFirstWordKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-var SingleDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var AddWordKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Добавить слово", "addWord"),
 	),
@@ -44,7 +44,7 @@ func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) tgbotapi.In
 	case model.LastPage:
 		return LastDictionaryPageKeyboard
 	case model.SinglePage:
-		return SingleDictionaryPageKeyboard
+		return AddWordKeyboard
 	default:
 		return MiddleDictionaryPageKeyboard
 	}
