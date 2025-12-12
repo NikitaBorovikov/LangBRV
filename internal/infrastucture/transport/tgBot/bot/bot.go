@@ -73,25 +73,29 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 func (b *Bot) handleCommands(update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case StartCommand:
-		msgText := b.handlers.StartCommand(update)
+		msgText := b.handlers.StartCommand(update.Message.From.ID, update.Message.From.UserName)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case AddWordCommand:
-		msgText := b.handlers.AddWordCommand(update)
+		msgText := b.handlers.AddWordCommand(update.Message.Chat.ID)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case GetDictionaryCommand:
-		msgText, pageInfo := b.handlers.GetDictionaryCommand(update)
-		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
-		msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboard)
-		pageInfo.DictionaryMsgID = msgID
+		msgText, pageInfo := b.handlers.GetDictionaryCommand(update.Message.From.ID)
+		if pageInfo != nil {
+			keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+			msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboard)
+			pageInfo.DictionaryMsgID = msgID
+		} else {
+			b.sendMessage(update.Message.Chat.ID, msgText)
+		}
 
 	case RemindCommand:
-		msgText := b.handlers.GetRemindListCommand(update)
+		msgText := b.handlers.GetRemindListCommand(update.Message.From.ID)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case DeleteWordCommand:
-		msgText := b.handlers.DeleteWordCommand(update)
+		msgText := b.handlers.DeleteWordCommand(update.Message.From.ID)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	default:
@@ -111,11 +115,11 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 
 	switch userState.State {
 	case model.AddWord:
-		msgText := b.handlers.SaveWord(update)
+		msgText := b.handlers.SaveWord(update.Message.From.ID, update.Message.Text)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case model.DelWord:
-		msgText := b.handlers.DeleteWord(update)
+		msgText := b.handlers.DeleteWord(update.Message.From.ID, update.Message.Text)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	default:
@@ -127,12 +131,12 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	switch update.CallbackQuery.Data {
 	case NextPageCallback:
-		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Next)
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, handlers.Next)
 		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
 		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
 
 	case PreviousPageCallback:
-		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update, handlers.Previous)
+		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, handlers.Previous)
 		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
 		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
 

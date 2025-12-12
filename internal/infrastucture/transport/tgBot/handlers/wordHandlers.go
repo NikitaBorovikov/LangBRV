@@ -5,12 +5,11 @@ import (
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
 
-func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
-	state := model.NewUserState(update.Message.Chat.ID, model.AddWord)
+func (h *Handlers) AddWordCommand(chatID int64) string {
+	state := model.NewUserState(chatID, model.AddWord)
 
 	if err := h.UseCases.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)
@@ -20,8 +19,8 @@ func (h *Handlers) AddWordCommand(update tgbotapi.Update) string {
 	return h.Msg.Info.AddWord
 }
 
-func (h *Handlers) GetRemindListCommand(update tgbotapi.Update) string {
-	remindList, err := h.UseCases.WordUC.GetRemindList(update.Message.From.ID)
+func (h *Handlers) GetRemindListCommand(userID int64) string {
+	remindList, err := h.UseCases.WordUC.GetRemindList(userID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
@@ -37,8 +36,8 @@ func (h *Handlers) GetRemindListCommand(update tgbotapi.Update) string {
 	return remindMsg
 }
 
-func (h *Handlers) DeleteWordCommand(update tgbotapi.Update) string {
-	state := model.NewUserState(update.Message.From.ID, model.DelWord)
+func (h *Handlers) DeleteWordCommand(userID int64) string {
+	state := model.NewUserState(userID, model.DelWord)
 
 	if err := h.UseCases.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)
@@ -48,8 +47,8 @@ func (h *Handlers) DeleteWordCommand(update tgbotapi.Update) string {
 	return h.Msg.Info.DelWord
 }
 
-func (h *Handlers) SaveWord(update tgbotapi.Update) string {
-	req := dto.NewAddWordRequest(update.Message.From.ID, update.Message.Text)
+func (h *Handlers) SaveWord(userID int64, msgText string) string {
+	req := dto.NewAddWordRequest(userID, msgText)
 	word, err := req.ToDomainWord()
 	if err != nil {
 		logrus.Error(err)
@@ -67,8 +66,8 @@ func (h *Handlers) SaveWord(update tgbotapi.Update) string {
 	return h.Msg.Success.WordAdded
 }
 
-func (h *Handlers) DeleteWord(update tgbotapi.Update) string {
-	if err := h.UseCases.WordUC.Delete(update.Message.From.ID, update.Message.Text); err != nil {
+func (h *Handlers) DeleteWord(userID int64, msgText string) string {
+	if err := h.UseCases.WordUC.Delete(userID, msgText); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &h.Msg.Errors)
 		return errMsgText

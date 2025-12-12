@@ -4,12 +4,11 @@ import (
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
 
-func (h *Handlers) StartCommand(update tgbotapi.Update) string {
-	req := dto.NewRegistrationRequest(update.Message.From.ID, update.Message.From.UserName)
+func (h *Handlers) StartCommand(userID int64, username string) string {
+	req := dto.NewRegistrationRequest(userID, username)
 	user := req.ToDomainUser()
 
 	if err := h.UseCases.UserUC.CreateOrUpdate(user); err != nil {
