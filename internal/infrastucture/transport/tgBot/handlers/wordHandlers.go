@@ -8,8 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *Handlers) AddWordCommand(chatID int64) string {
-	state := model.NewUserState(chatID, model.AddWord)
+func (h *Handlers) AddWordCommand(userID int64) string {
+	state := model.NewUserState(userID, model.AddWord)
 
 	if err := h.UseCases.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)

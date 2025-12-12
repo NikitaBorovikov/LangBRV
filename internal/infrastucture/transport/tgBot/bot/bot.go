@@ -19,6 +19,7 @@ const (
 
 	NextPageCallback     = "nextPage"
 	PreviousPageCallback = "previousPage"
+	AddWordCallback      = "addWord"
 )
 
 type Bot struct {
@@ -74,10 +75,10 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case StartCommand:
 		msgText := b.handlers.StartCommand(update.Message.From.ID, update.Message.From.UserName)
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, AddFirstWordKeyboard)
 
 	case AddWordCommand:
-		msgText := b.handlers.AddWordCommand(update.Message.Chat.ID)
+		msgText := b.handlers.AddWordCommand(update.Message.From.ID)
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case GetDictionaryCommand:
@@ -139,6 +140,10 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 		msgText, pageInfo := b.handlers.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, handlers.Previous)
 		keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
 		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
+
+	case AddWordCallback:
+		msgText := b.handlers.AddWordCommand(update.CallbackQuery.From.ID)
+		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
 
 	default:
 		msgText := b.handlers.Msg.Errors.Unknown
