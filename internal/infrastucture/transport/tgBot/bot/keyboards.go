@@ -18,6 +18,13 @@ var AddWordKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
+var MainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Добавить ещё", "addWord"),
+		tgbotapi.NewInlineKeyboardButtonData("Мой словарь", "getDictionary"),
+	),
+)
+
 var FirstDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextPage"),

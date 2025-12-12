@@ -17,9 +17,10 @@ const (
 	RemindCommand        = "remind"
 	DeleteWordCommand    = "del_word"
 
-	NextPageCallback     = "nextPage"
-	PreviousPageCallback = "previousPage"
-	AddWordCallback      = "addWord"
+	NextPageCallback      = "nextPage"
+	PreviousPageCallback  = "previousPage"
+	AddWordCallback       = "addWord"
+	GetDictionaryCallback = "getDictionary"
 )
 
 type Bot struct {
@@ -121,6 +122,10 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 	switch userState.State {
 	case model.AddWord:
 		msgText := b.handlers.SaveWord(update.Message.From.ID, update.Message.Text)
+		if msgText == b.handlers.Msg.Success.WordAdded {
+			b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, MainKeyboard)
+			return
+		}
 		b.sendMessage(update.Message.Chat.ID, msgText)
 
 	case model.DelWord:
@@ -147,6 +152,20 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 
 	case AddWordCallback:
 		msgText := b.handlers.AddWordCommand(update.CallbackQuery.From.ID)
+		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
+
+	case GetDictionaryCallback:
+		msgText, pageInfo := b.handlers.GetDictionaryCommand(update.CallbackQuery.From.ID)
+		if pageInfo != nil {
+			keyboard := ChooseDictionaryKeyboard(pageInfo.Status)
+			msgID := b.sendMessageWithKeyboard(update.CallbackQuery.Message.Chat.ID, msgText, keyboard)
+			pageInfo.DictionaryMsgID = msgID
+			return
+		}
+		if msgText == b.handlers.Msg.Errors.NoWords {
+			b.sendMessageWithKeyboard(update.CallbackQuery.Message.Chat.ID, msgText, AddWordKeyboard)
+			return
+		}
 		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
 
 	default:
