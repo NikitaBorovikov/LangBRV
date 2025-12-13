@@ -3,7 +3,7 @@ package bot
 import (
 	"langbrv/internal/config"
 	"langbrv/internal/core/model"
-	"langbrv/internal/infrastucture/transport/tgBot/handlers"
+	"langbrv/internal/usecases"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -24,29 +24,29 @@ const (
 )
 
 type Bot struct {
-	bot      *tgbotapi.BotAPI
-	cfg      *config.Telegram
-	handlers *handlers.Handlers
+	bot *tgbotapi.BotAPI
+	cfg *config.Config
+	uc  *usecases.UseCases
 }
 
-func NewBot(cfg *config.Telegram, handlers *handlers.Handlers) (*Bot, error) {
-	bot, err := tgbotapi.NewBotAPI(cfg.Token)
+func NewBot(cfg *config.Config, uc *usecases.UseCases) (*Bot, error) {
+	bot, err := tgbotapi.NewBotAPI(cfg.Telegram.Token)
 	if err != nil {
 		return nil, err
 	}
 	bot.Debug = true
 
 	b := &Bot{
-		bot:      bot,
-		cfg:      cfg,
-		handlers: handlers,
+		bot: bot,
+		cfg: cfg,
+		uc:  uc,
 	}
 	return b, nil
 }
 
 func (b *Bot) Start() {
 	updateConfig := tgbotapi.NewUpdate(0)
-	updateConfig.Timeout = b.cfg.UpdateTimeout
+	updateConfig.Timeout = b.cfg.Telegram.UpdateTimeout
 	updates := b.bot.GetUpdatesChan(updateConfig)
 	b.handleUpdates(updates)
 }
@@ -75,64 +75,44 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 func (b *Bot) handleCommands(update tgbotapi.Update) {
 	switch update.Message.Command() {
 	case StartCommand:
-		msgText, keyboardType := b.handlers.StartCommand(update.Message.From.ID, update.Message.From.UserName)
-		if keyboardType == nil {
-			b.sendMessage(update.Message.Chat.ID, msgText)
-			return
-		}
-		b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboardType)
+		b.StartCommand(*update.Message)
 
 	case AddWordCommand:
-		msgText := b.handlers.AddWordCommand(update.Message.From.ID)
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		b.AddWordCommand(update.Message.From.ID, update.Message.Chat.ID)
 
 	case GetDictionaryCommand:
-		msgText, pageInfo, keyboardType := b.handlers.GetDictionaryCommand(update.Message.From.ID)
-		if keyboardType == nil {
-			b.sendMessage(update.Message.Chat.ID, msgText)
-			return
-		}
-		msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboardType)
-		pageInfo.DictionaryMsgID = msgID
+		b.GetDictionaryCommand(update.Message.From.ID, update.Message.Chat.ID)
 
 	case RemindCommand:
-		msgText := b.handlers.GetRemindListCommand(update.Message.From.ID)
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		b.GetRemindListCommand(update)
 
 	case DeleteWordCommand:
-		msgText := b.handlers.DeleteWordCommand(update.Message.From.ID)
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		b.DeleteWordCommand(update)
 
 	default:
-		msgText := b.handlers.Msg.Errors.UnknownCommand
+		msgText := b.cfg.Msg.Errors.UnknownCommand
 		b.sendMessage(update.Message.Chat.ID, msgText)
 	}
 }
 
 func (b *Bot) handleMessages(update tgbotapi.Update) {
-	userState, err := b.handlers.UseCases.UserStateUC.Get(update.Message.From.ID)
+	userState, err := b.uc.UserStateUC.Get(update.Message.From.ID)
 	if err != nil || userState == nil {
 		logrus.Error(err)
-		msgText := b.handlers.Msg.Errors.UnknownMsg
+		msgText := b.cfg.Msg.Errors.UnknownMsg
 		b.sendMessage(update.Message.Chat.ID, msgText)
 		return
 	}
 
 	switch userState.State {
 	case model.AddWord:
-		msgText, keyboardType := b.handlers.SaveWord(update.Message.From.ID, update.Message.Text)
-		if keyboardType == nil {
-			b.sendMessage(update.Message.Chat.ID, msgText)
-			return
-		}
-		b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboardType)
+		b.SaveWord(update)
 
 	case model.DelWord:
-		msgText := b.handlers.DeleteWord(update.Message.From.ID, update.Message.Text)
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		b.DeleteWord(update)
 
 	default:
-		msgText := b.handlers.Msg.Errors.UnknownMsg
+		msgText := b.cfg.Msg.Errors.UnknownMsg
 		b.sendMessage(update.Message.Chat.ID, msgText)
 	}
 }
@@ -140,46 +120,19 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	switch update.CallbackQuery.Data {
 	case NextPageCallback:
-		msgText, pageInfo, keyboardType := b.handlers.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, handlers.Next)
-		if keyboardType == nil {
-			b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
-			return
-		}
-		keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-		if !ok {
-			b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
-			return
-		}
-		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
+		b.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID, Next)
 
 	case PreviousPageCallback:
-		msgText, pageInfo, keyboardType := b.handlers.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, handlers.Previous)
-		if keyboardType == nil {
-			b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
-			return
-		}
-		keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-		if !ok {
-			b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
-			return
-		}
-		b.updateDictionaryMsg(update.CallbackQuery.Message.Chat.ID, pageInfo.DictionaryMsgID, msgText, keyboard)
+		b.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID, Previous)
 
 	case AddWordCallback:
-		msgText := b.handlers.AddWordCommand(update.CallbackQuery.From.ID)
-		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
+		b.AddWordCommand(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID)
 
 	case GetDictionaryCallback:
-		msgText, pageInfo, keyboardType := b.handlers.GetDictionaryCommand(update.CallbackQuery.From.ID)
-		if keyboardType == nil {
-			b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
-			return
-		}
-		msgID := b.sendMessageWithKeyboard(update.CallbackQuery.Message.Chat.ID, msgText, keyboardType)
-		pageInfo.DictionaryMsgID = msgID
+		b.GetDictionaryCommand(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID)
 
 	default:
-		msgText := b.handlers.Msg.Errors.Unknown
+		msgText := b.cfg.Msg.Errors.Unknown
 		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
 	}
 }
@@ -204,7 +157,7 @@ func (b *Bot) sendMessageWithKeyboard(chatID int64, text string, keyboard interf
 	return msgInfo.MessageID
 }
 
-func (b *Bot) updateDictionaryMsg(chatID int64, msgID int, text string, keyboard tgbotapi.InlineKeyboardMarkup) {
+func (b *Bot) updateMessage(chatID int64, msgID int, text string, keyboard tgbotapi.InlineKeyboardMarkup) {
 	msg := tgbotapi.NewEditMessageText(chatID, msgID, text)
 	msg.ParseMode = tgbotapi.ModeHTML
 	msg.ReplyMarkup = &keyboard

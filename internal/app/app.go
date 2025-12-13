@@ -5,7 +5,6 @@ import (
 	"langbrv/internal/config"
 	repo "langbrv/internal/infrastucture/repository"
 	"langbrv/internal/infrastucture/transport/tgBot/bot"
-	"langbrv/internal/infrastucture/transport/tgBot/handlers"
 	"langbrv/internal/usecases"
 
 	"github.com/jmoiron/sqlx"
@@ -26,9 +25,8 @@ func Run() {
 
 	repo := repo.NewRepository(db)
 	usecases := usecases.NewUseCases(repo)
-	handlers := handlers.NewHandlers(usecases, &cfg.Msg)
 
-	bot, err := bot.NewBot(&cfg.Telegram, handlers)
+	bot, err := bot.NewBot(cfg, usecases)
 	if err != nil {
 		logrus.Fatalf("failed to init Telegram bot: %v", err)
 	}

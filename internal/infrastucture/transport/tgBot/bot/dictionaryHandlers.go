@@ -1,0 +1,94 @@
+package bot
+
+import (
+	apperrors "langbrv/internal/app_errors"
+	"langbrv/internal/core/model"
+	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/sirupsen/logrus"
+)
+
+type PageNavigation string
+
+const (
+	Next     PageNavigation = "NEXT"
+	Previous PageNavigation = "PREVIOUS"
+)
+
+func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
+	page := model.NewDictionaryPage(userID)
+
+	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(page.UserID)
+	if err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		if errMsgText == b.cfg.Msg.Errors.NoWords {
+			page.DictionaryMsgID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
+			return
+		}
+		b.sendMessage(chatID, errMsgText)
+		return
+	}
+	page.TotalPages = totalPages
+
+	page.DetermineStatus()
+	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Status)
+
+	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		b.sendMessage(chatID, errMsgText)
+		return
+	}
+
+	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(page)
+	if err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		b.sendMessage(chatID, errMsgText)
+		return
+	}
+	page.DictionaryMsgID = b.sendMessageWithKeyboard(chatID, formatedPage, keyboardType)
+}
+
+func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation PageNavigation) {
+	page, err := b.uc.DictionaryPageUC.Get(userID)
+	if err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		b.sendMessage(chatID, errMsgText)
+		return
+	}
+
+	if navigation == Next {
+		page.CurrentPage++
+	} else {
+		page.CurrentPage--
+	}
+
+	page.DetermineStatus()
+	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Status)
+
+	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
+	if !ok {
+		b.sendMessage(chatID, b.cfg.Msg.Errors.Unknown)
+		return
+	}
+
+	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		b.sendMessage(chatID, errMsgText)
+		return
+	}
+
+	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(page)
+	if err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		b.sendMessage(chatID, errMsgText)
+		return
+	}
+	b.updateMessage(chatID, page.DictionaryMsgID, formatedPage, keyboard)
+}
