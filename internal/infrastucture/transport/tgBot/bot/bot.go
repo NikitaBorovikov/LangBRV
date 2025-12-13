@@ -186,6 +186,7 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 
 func (b *Bot) sendMessage(chatID int64, text string) {
 	msg := tgbotapi.NewMessage(chatID, text)
+	msg.ParseMode = tgbotapi.ModeHTML
 	if _, err := b.bot.Send(msg); err != nil {
 		logrus.Errorf("failed to send message to chat id: %d, err: %v", chatID, err)
 	}
@@ -193,6 +194,7 @@ func (b *Bot) sendMessage(chatID int64, text string) {
 
 func (b *Bot) sendMessageWithKeyboard(chatID int64, text string, keyboard interface{}) int {
 	msg := tgbotapi.NewMessage(chatID, text)
+	msg.ParseMode = tgbotapi.ModeHTML
 	msg.ReplyMarkup = keyboard
 	msgInfo, err := b.bot.Send(msg)
 	if err != nil {
@@ -204,6 +206,7 @@ func (b *Bot) sendMessageWithKeyboard(chatID int64, text string, keyboard interf
 
 func (b *Bot) updateDictionaryMsg(chatID int64, msgID int, text string, keyboard tgbotapi.InlineKeyboardMarkup) {
 	msg := tgbotapi.NewEditMessageText(chatID, msgID, text)
+	msg.ParseMode = tgbotapi.ModeHTML
 	msg.ReplyMarkup = &keyboard
 	if _, err := b.bot.Send(msg); err != nil {
 		logrus.Errorf("failed to update message to chat id: %d, err: %v", chatID, err)

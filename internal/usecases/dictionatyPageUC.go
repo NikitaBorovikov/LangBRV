@@ -39,8 +39,8 @@ func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, 
 	var sb strings.Builder
 	sb.Grow(expectedPageSize)
 
-	sb.WriteString("📚 Твой словарь:")
-	fmt.Fprintf(&sb, " (Страница %d/%d)\n", pageInfo.CurrentPage, pageInfo.TotalPages)
+	sb.WriteString("📚 <b>Твой словарь:</b>")
+	fmt.Fprintf(&sb, " <i>(cтраница %d/%d)</i>\n\n", pageInfo.CurrentPage, pageInfo.TotalPages)
 
 	for _, word := range pageInfo.Words {
 		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)
