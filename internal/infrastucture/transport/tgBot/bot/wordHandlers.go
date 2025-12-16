@@ -6,7 +6,6 @@ import (
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,85 +14,85 @@ func (b *Bot) AddWordCommand(userID, chatID int64) {
 
 	if err := b.uc.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	msgText := b.cfg.Msg.Info.AddWord
+	msgText := b.msg.Info.AddWord
 	b.sendMessage(chatID, msgText)
 }
 
-func (b *Bot) GetRemindListCommand(update tgbotapi.Update) {
-	remindList, err := b.uc.WordUC.GetRemindList(update.Message.From.ID)
+func (b *Bot) GetRemindListCommand(userID, chatID int64) {
+	remindList, err := b.uc.WordUC.GetRemindList(userID)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
-		b.sendMessage(update.Message.Chat.ID, errMsgText)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		b.sendMessage(chatID, errMsgText)
 		return
 	}
 
 	remindMsg, err := b.uc.WordUC.FormatRemindList(remindList)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
-		b.sendMessage(update.Message.Chat.ID, errMsgText)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.sendMessage(update.Message.Chat.ID, remindMsg)
+	b.sendMessage(chatID, remindMsg)
 }
 
-func (b *Bot) DeleteWordCommand(update tgbotapi.Update) {
-	state := model.NewUserState(update.Message.From.ID, model.DelWord, 0)
+func (b *Bot) DeleteWordCommand(userID, chatID int64) {
+	state := model.NewUserState(userID, model.DelWord, 0)
 
 	if err := b.uc.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
-		b.sendMessage(update.Message.Chat.ID, errMsgText)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	msgText := b.cfg.Msg.Info.DelWord
-	b.sendMessage(update.Message.Chat.ID, msgText)
+	msgText := b.msg.Info.DelWord
+	b.sendMessage(chatID, msgText)
 }
 
-func (b *Bot) SaveWord(update tgbotapi.Update) {
-	userState, err := b.uc.UserStateUC.Get(update.Message.From.ID)
+func (b *Bot) SaveWord(userID, chatID int64, text string) {
+	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
 		logrus.Error(err)
-		msgText := b.cfg.Msg.Errors.UnknownMsg
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		msgText := b.msg.Errors.UnknownMsg
+		b.sendMessage(chatID, msgText)
 		return
 	}
 
-	req := dto.NewAddWordRequest(update.Message.From.ID, update.Message.Text)
+	req := dto.NewAddWordRequest(userID, text)
 	word, err := req.ToDomainWord()
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
-		b.sendMessage(update.Message.Chat.ID, errMsgText)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		b.sendMessage(chatID, errMsgText)
 		return
 	}
 
 	wordID, err := b.uc.WordUC.Add(word)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
-		b.sendMessage(update.Message.Chat.ID, errMsgText)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		b.sendMessage(chatID, errMsgText)
 		return
 	}
 
-	msgText := b.cfg.Msg.Success.WordAdded
-	msgID := b.sendMessageWithKeyboard(update.Message.Chat.ID, msgText, keyboards.MainKeyboard)
+	msgText := b.msg.Success.WordAdded
+	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
 	userState.LastMsgID = msgID
 	logrus.Infof("word is saved: id = %s", wordID)
 }
 
-func (b *Bot) DeleteWord(update tgbotapi.Update) {
-	if err := b.uc.WordUC.Delete(update.Message.From.ID, update.Message.Text); err != nil {
+func (b *Bot) DeleteWord(userID, chatID int64, text string) {
+	if err := b.uc.WordUC.Delete(userID, text); err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
-		b.sendMessage(update.Message.Chat.ID, errMsgText)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	msgText := b.cfg.Msg.Success.WordDeleted
-	b.sendMessage(update.Message.Chat.ID, msgText)
+	msgText := b.msg.Success.WordDeleted
+	b.sendMessage(chatID, msgText)
 }

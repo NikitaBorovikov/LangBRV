@@ -22,8 +22,8 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(page.UserID)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
-		if errMsgText == b.cfg.Msg.Errors.NoWords {
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		if errMsgText == b.msg.Errors.NoWords {
 			page.DictionaryMsgID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
 			return
 		}
@@ -37,7 +37,7 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 
 	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
@@ -45,7 +45,7 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(page)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
@@ -56,7 +56,7 @@ func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation PageNavi
 	page, err := b.uc.DictionaryPageUC.Get(userID)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
@@ -72,13 +72,13 @@ func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation PageNavi
 
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
-		b.sendMessage(chatID, b.cfg.Msg.Errors.Unknown)
+		b.sendMessage(chatID, b.msg.Errors.Unknown)
 		return
 	}
 
 	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
@@ -86,7 +86,7 @@ func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation PageNavi
 	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(page)
 	if err != nil {
 		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.cfg.Msg.Errors)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}

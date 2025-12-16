@@ -12,6 +12,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	dbDriverName = "postgres"
+)
+
 func Run() {
 	cfg, err := config.InitConfig()
 	if err != nil {
@@ -30,12 +34,12 @@ func Run() {
 	if err != nil {
 		logrus.Fatalf("failed to init Telegram bot: %v", err)
 	}
-	bot.Start()
+	bot.Start(&cfg.Telegram)
 }
 
 func initPostgresDB(cfg *config.DB) (*sqlx.DB, error) {
 	dsn := makeDSN(cfg)
-	db, err := sqlx.Open("postgres", dsn)
+	db, err := sqlx.Open(dbDriverName, dsn)
 	if err != nil {
 		return nil, err
 	}

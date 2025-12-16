@@ -25,7 +25,7 @@ const (
 
 type Bot struct {
 	bot *tgbotapi.BotAPI
-	cfg *config.Config
+	msg *config.Messages
 	uc  *usecases.UseCases
 }
 
@@ -38,15 +38,15 @@ func NewBot(cfg *config.Config, uc *usecases.UseCases) (*Bot, error) {
 
 	b := &Bot{
 		bot: bot,
-		cfg: cfg,
+		msg: &cfg.Msg,
 		uc:  uc,
 	}
 	return b, nil
 }
 
-func (b *Bot) Start() {
+func (b *Bot) Start(cfg *config.Telegram) {
 	updateConfig := tgbotapi.NewUpdate(0)
-	updateConfig.Timeout = b.cfg.Telegram.UpdateTimeout
+	updateConfig.Timeout = cfg.UpdateTimeout
 	updates := b.bot.GetUpdatesChan(updateConfig)
 	b.handleUpdates(updates)
 }
@@ -73,67 +73,78 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 }
 
 func (b *Bot) handleCommands(update tgbotapi.Update) {
+	userID := update.Message.From.ID
+	chatID := update.Message.Chat.ID
+
 	switch update.Message.Command() {
 	case StartCommand:
-		b.StartCommand(*update.Message)
+		username := update.Message.From.UserName
+		b.StartCommand(userID, chatID, username)
 
 	case AddWordCommand:
-		b.AddWordCommand(update.Message.From.ID, update.Message.Chat.ID)
+		b.AddWordCommand(userID, chatID)
 
 	case GetDictionaryCommand:
-		b.GetDictionaryCommand(update.Message.From.ID, update.Message.Chat.ID)
+		b.GetDictionaryCommand(userID, chatID)
 
 	case RemindCommand:
-		b.GetRemindListCommand(update)
+		b.GetRemindListCommand(userID, chatID)
 
 	case DeleteWordCommand:
-		b.DeleteWordCommand(update)
+		b.DeleteWordCommand(userID, chatID)
 
 	default:
-		msgText := b.cfg.Msg.Errors.UnknownCommand
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		msgText := b.msg.Errors.UnknownCommand
+		b.sendMessage(chatID, msgText)
 	}
 }
 
 func (b *Bot) handleMessages(update tgbotapi.Update) {
-	userState, err := b.uc.UserStateUC.Get(update.Message.From.ID)
+	userID := update.Message.From.ID
+	chatID := update.Message.Chat.ID
+	text := update.Message.Text
+
+	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
 		logrus.Error(err)
-		msgText := b.cfg.Msg.Errors.UnknownMsg
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		msgText := b.msg.Errors.UnknownMsg
+		b.sendMessage(chatID, msgText)
 		return
 	}
 
 	switch userState.State {
 	case model.AddWord:
-		b.SaveWord(update)
+		b.SaveWord(userID, chatID, text)
 
 	case model.DelWord:
-		b.DeleteWord(update)
+		b.DeleteWord(userID, chatID, text)
 
 	default:
-		msgText := b.cfg.Msg.Errors.UnknownMsg
-		b.sendMessage(update.Message.Chat.ID, msgText)
+		msgText := b.msg.Errors.UnknownMsg
+		b.sendMessage(chatID, msgText)
 	}
 }
 
 func (b *Bot) handleCallbacks(update tgbotapi.Update) {
+	userID := update.CallbackQuery.From.ID
+	chatID := update.CallbackQuery.Message.Chat.ID
+
 	switch update.CallbackQuery.Data {
 	case NextPageCallback:
-		b.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID, Next)
+		b.GetAnotherDictionaryPage(userID, chatID, Next)
 
 	case PreviousPageCallback:
-		b.GetAnotherDictionaryPage(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID, Previous)
+		b.GetAnotherDictionaryPage(userID, chatID, Previous)
 
 	case AddWordCallback:
-		b.AddWordCommand(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID)
+		b.AddWordCommand(userID, chatID)
 
 	case GetDictionaryCallback:
-		b.GetDictionaryCommand(update.CallbackQuery.From.ID, update.CallbackQuery.Message.Chat.ID)
+		b.GetDictionaryCommand(userID, chatID)
 
 	default:
-		msgText := b.cfg.Msg.Errors.Unknown
-		b.sendMessage(update.CallbackQuery.Message.Chat.ID, msgText)
+		msgText := b.msg.Errors.Unknown
+		b.sendMessage(chatID, msgText)
 	}
 }
 
