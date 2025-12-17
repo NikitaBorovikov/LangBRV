@@ -52,32 +52,44 @@ func (b *Bot) Start(cfg *config.Telegram) {
 
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
-		if update.Message != nil {
-			start := time.Now()
-			if update.Message.IsCommand() {
-				b.handleCommands(update)
-			} else {
-				b.handleMessages(update)
-			}
-			duration := time.Since(start)
-			logrus.Infof("Request duration: %v", duration)
+		go func(u tgbotapi.Update) {
+			defer func() {
+				if r := recover(); r != nil {
+					logrus.Errorf("recovered from panic: %v\n", r)
+				}
+			}()
 
-		} else if update.CallbackQuery != nil {
-			start := time.Now()
-			b.handleCallbacks(update)
-			duration := time.Since(start)
-			logrus.Infof("Request duration: %v", duration)
-		}
+			b.processUpdate(u)
+		}(update)
 	}
 }
 
-func (b *Bot) handleCommands(update tgbotapi.Update) {
-	userID := update.Message.From.ID
-	chatID := update.Message.Chat.ID
+func (b *Bot) processUpdate(update tgbotapi.Update) {
+	if update.Message != nil {
+		start := time.Now()
+		if update.Message.IsCommand() {
+			b.handleCommands(update.Message)
+		} else {
+			b.handleMessages(update.Message)
+		}
+		duration := time.Since(start)
+		logrus.Infof("Request duration: %v", duration)
 
-	switch update.Message.Command() {
+	} else if update.CallbackQuery != nil {
+		start := time.Now()
+		b.handleCallbacks(update)
+		duration := time.Since(start)
+		logrus.Infof("Request duration: %v", duration)
+	}
+}
+
+func (b *Bot) handleCommands(update *tgbotapi.Message) {
+	userID := update.From.ID
+	chatID := update.Chat.ID
+
+	switch update.Command() {
 	case StartCommand:
-		username := update.Message.From.UserName
+		username := update.From.UserName
 		b.StartCommand(userID, chatID, username)
 
 	case AddWordCommand:
@@ -98,10 +110,10 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 	}
 }
 
-func (b *Bot) handleMessages(update tgbotapi.Update) {
-	userID := update.Message.From.ID
-	chatID := update.Message.Chat.ID
-	text := update.Message.Text
+func (b *Bot) handleMessages(update *tgbotapi.Message) {
+	userID := update.From.ID
+	chatID := update.Chat.ID
+	text := update.Text
 
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
