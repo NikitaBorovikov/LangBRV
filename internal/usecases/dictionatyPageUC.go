@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	wordsPerPage     int64 = 5
+	wordsPerPage     int64 = 10
 	expectedPageSize int   = 700 // примерный размер одной страницы словаря в байтах
 )
 
