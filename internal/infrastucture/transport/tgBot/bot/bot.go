@@ -133,7 +133,7 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 		b.AddWord(userID, chatID)
 
 	case GetDictionaryCallback:
-		b.GetDictionaryCommand(userID, chatID)
+		b.GetDictionaryCB(userID, chatID)
 
 	default:
 		msgText := b.msg.Errors.Unknown
