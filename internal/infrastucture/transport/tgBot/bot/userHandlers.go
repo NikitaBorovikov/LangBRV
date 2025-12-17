@@ -19,5 +19,5 @@ func (b *Bot) StartCommand(userID, chatID int64, username string) {
 		return
 	}
 	msgText := b.msg.Info.Start
-	b.sendMessageWithKeyboard(chatID, msgText, keyboards.AddFirstWordKeyboard)
+	b.sendMessageWithKeyboard(chatID, msgText, keyboards.StartKeyboard)
 }
