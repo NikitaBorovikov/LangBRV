@@ -14,7 +14,7 @@ const (
 	AddWordCommand       = "add"
 	GetDictionaryCommand = "dictionary"
 	RemindCommand        = "remind"
-	DeleteWordCommand    = "del_word"
+	DeleteWordCommand    = "delete"
 
 	NextPageCallback      = "nextPage"
 	PreviousPageCallback  = "previousPage"
