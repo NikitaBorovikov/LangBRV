@@ -1,7 +1,9 @@
 package bot
 
 import (
+	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/config"
+	"langbrv/internal/core/model"
 	"langbrv/internal/usecases"
 	"time"
 
@@ -55,7 +57,7 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 		go func(u tgbotapi.Update) {
 			defer func() {
 				if r := recover(); r != nil {
-					logrus.Errorf("recovered from panic: %v\n", r)
+					logrus.Errorf("recovered from panic: %v", r)
 				}
 			}()
 
@@ -117,10 +119,13 @@ func (b *Bot) handleMessages(update *tgbotapi.Message) {
 
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
-		logrus.Error(err)
-		msgText := b.msg.Errors.UnknownMsg
-		b.sendMessage(chatID, msgText)
-		return
+		userState = model.NewUserState(userID, false, 0)
+		if err := b.uc.UserStateUC.Set(userState); err != nil {
+			logrus.Error(err)
+			errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+			b.sendMessage(chatID, errMsgText)
+			return
+		}
 	}
 
 	if !userState.DeleteMode {
