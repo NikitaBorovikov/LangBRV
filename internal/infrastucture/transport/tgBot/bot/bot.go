@@ -2,7 +2,6 @@ package bot
 
 import (
 	"langbrv/internal/config"
-	"langbrv/internal/core/model"
 	"langbrv/internal/usecases"
 	"time"
 
@@ -82,7 +81,7 @@ func (b *Bot) handleCommands(update tgbotapi.Update) {
 		b.StartCommand(userID, chatID, username)
 
 	case AddWordCommand:
-		b.AddWordCommand(userID, chatID)
+		b.AddWord(userID, chatID)
 
 	case GetDictionaryCommand:
 		b.GetDictionaryCommand(userID, chatID)
@@ -112,16 +111,10 @@ func (b *Bot) handleMessages(update tgbotapi.Update) {
 		return
 	}
 
-	switch userState.State {
-	case model.AddWord:
-		b.SaveWord(userID, chatID, text)
-
-	case model.DelWord:
-		b.DeleteWord(userID, chatID, text)
-
-	default:
-		msgText := b.msg.Errors.UnknownMsg
-		b.sendMessage(chatID, msgText)
+	if !userState.DeleteMode {
+		b.SaveWord(userState, chatID, text)
+	} else {
+		b.DeleteWord(userState, chatID, text)
 	}
 }
 
@@ -137,7 +130,7 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 		b.GetAnotherDictionaryPage(userID, chatID, Previous)
 
 	case AddWordCallback:
-		b.AddWordCommand(userID, chatID)
+		b.AddWord(userID, chatID)
 
 	case GetDictionaryCallback:
 		b.GetDictionaryCommand(userID, chatID)

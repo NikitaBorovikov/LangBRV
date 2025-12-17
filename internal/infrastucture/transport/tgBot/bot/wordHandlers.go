@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (b *Bot) AddWordCommand(userID, chatID int64) {
-	state := model.NewUserState(userID, model.AddWord, 0)
+func (b *Bot) AddWord(userID, chatID int64) {
+	state := model.NewUserState(userID, false, 0)
 
 	if err := b.uc.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)
@@ -42,7 +42,7 @@ func (b *Bot) GetRemindListCommand(userID, chatID int64) {
 }
 
 func (b *Bot) DeleteWordCommand(userID, chatID int64) {
-	state := model.NewUserState(userID, model.DelWord, 0)
+	state := model.NewUserState(userID, true, 0)
 
 	if err := b.uc.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)
@@ -54,16 +54,8 @@ func (b *Bot) DeleteWordCommand(userID, chatID int64) {
 	b.sendMessage(chatID, msgText)
 }
 
-func (b *Bot) SaveWord(userID, chatID int64, text string) {
-	userState, err := b.uc.UserStateUC.Get(userID)
-	if err != nil || userState == nil {
-		logrus.Error(err)
-		msgText := b.msg.Errors.UnknownMsg
-		b.sendMessage(chatID, msgText)
-		return
-	}
-
-	req := dto.NewAddWordRequest(userID, text)
+func (b *Bot) SaveWord(state *model.UserState, chatID int64, text string) {
+	req := dto.NewAddWordRequest(state.UserID, text)
 	word, err := req.ToDomainWord()
 	if err != nil {
 		logrus.Error(err)
@@ -82,17 +74,22 @@ func (b *Bot) SaveWord(userID, chatID int64, text string) {
 
 	msgText := b.msg.Success.WordAdded
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
-	userState.LastMsgID = msgID
+	state.LastMsgID = msgID
 	logrus.Infof("word is saved: id = %s", wordID)
 }
 
-func (b *Bot) DeleteWord(userID, chatID int64, text string) {
-	if err := b.uc.WordUC.Delete(userID, text); err != nil {
+func (b *Bot) DeleteWord(state *model.UserState, chatID int64, text string) {
+	defer func() {
+		state.DeleteMode = false // Выключаем режим удаления
+	}()
+
+	if err := b.uc.WordUC.Delete(state.UserID, text); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
 	msgText := b.msg.Success.WordDeleted
-	b.sendMessage(chatID, msgText)
+	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
+	state.LastMsgID = msgID
 }
