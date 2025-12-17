@@ -76,8 +76,8 @@ func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 
 	page.TotalPages = totalPages
 	page.DetermineStatus()
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Status)
 
+	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Status)
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
 		b.sendMessage(chatID, b.msg.Errors.Unknown)
