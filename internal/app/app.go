@@ -5,12 +5,15 @@ import (
 	"langbrv/internal/config"
 	repo "langbrv/internal/infrastucture/repository"
 	"langbrv/internal/infrastucture/transport/tgBot/bot"
-	"langbrv/internal/infrastucture/transport/tgBot/handlers"
 	"langbrv/internal/usecases"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	dbDriverName = "postgres"
 )
 
 func Run() {
@@ -26,18 +29,17 @@ func Run() {
 
 	repo := repo.NewRepository(db)
 	usecases := usecases.NewUseCases(repo)
-	handlers := handlers.NewHandlers(usecases, &cfg.Msg)
 
-	bot, err := bot.NewBot(&cfg.Telegram, handlers)
+	bot, err := bot.NewBot(cfg, usecases)
 	if err != nil {
 		logrus.Fatalf("failed to init Telegram bot: %v", err)
 	}
-	bot.Start()
+	bot.Start(&cfg.Telegram)
 }
 
 func initPostgresDB(cfg *config.DB) (*sqlx.DB, error) {
 	dsn := makeDSN(cfg)
-	db, err := sqlx.Open("postgres", dsn)
+	db, err := sqlx.Open(dbDriverName, dsn)
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ func (r *UserStateRepo) Get(userID int64) (*model.UserState, error) {
 
 	state := r.states[userID]
 	if state == nil {
-		return nil, fmt.Errorf("failed to find state with such chatID")
+		return nil, fmt.Errorf("failed to find state with such userID")
 	}
 	return state, nil
 }

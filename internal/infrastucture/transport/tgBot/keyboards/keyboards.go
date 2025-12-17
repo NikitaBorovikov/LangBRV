@@ -6,7 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var AddFirstWordKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var StartKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Добавить первое слово", "addWord"),
 	),
@@ -20,7 +20,6 @@ var AddWordKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var MainKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Добавить ещё", "addWord"),
 		tgbotapi.NewInlineKeyboardButtonData("Мой словарь", "getDictionary"),
 	),
 )

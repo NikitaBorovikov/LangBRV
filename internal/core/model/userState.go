@@ -1,20 +1,15 @@
 package model
 
-type State string
-
-const (
-	AddWord State = "ADD_WORD"
-	DelWord State = "DEL_WORD"
-)
-
 type UserState struct {
-	UserID int64
-	State  State
+	UserID     int64
+	DeleteMode bool
+	LastMsgID  int
 }
 
-func NewUserState(userID int64, state State) *UserState {
+func NewUserState(userID int64, deleteMode bool, msgID int) *UserState {
 	return &UserState{
-		UserID: userID,
-		State:  state,
+		UserID:     userID,
+		DeleteMode: deleteMode,
+		LastMsgID:  msgID,
 	}
 }
