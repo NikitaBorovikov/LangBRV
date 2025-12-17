@@ -64,8 +64,7 @@ func (b *Bot) SaveWord(state *model.UserState, chatID int64, text string) {
 		return
 	}
 
-	wordID, err := b.uc.WordUC.Add(word)
-	if err != nil {
+	if err := b.uc.WordUC.Add(word); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
@@ -75,7 +74,6 @@ func (b *Bot) SaveWord(state *model.UserState, chatID int64, text string) {
 	msgText := b.msg.Success.WordAdded
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
 	state.LastMsgID = msgID
-	logrus.Infof("word is saved: id = %s", wordID)
 }
 
 func (b *Bot) DeleteWord(state *model.UserState, chatID int64, text string) {

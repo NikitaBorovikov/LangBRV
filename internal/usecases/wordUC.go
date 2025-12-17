@@ -20,27 +20,26 @@ func NewWordUC(wr repository.WordRepo) *WordUC {
 	}
 }
 
-func (uc *WordUC) Add(word *model.Word) (string, error) {
+func (uc *WordUC) Add(word *model.Word) error {
 	// Проверяем, есть ли уже такое слово в словаре
 	existingWord, err := uc.WordRepo.FindByUserAndWord(word.UserID, word.Original)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	// Если слово уже есть, то просто обновляем его с новым LastSeen полем
 	if existingWord != nil {
 		existingWord.LastSeen = time.Now().UTC()
 		err := uc.WordRepo.Update(existingWord)
-		return existingWord.ID, err
+		return err
 	}
 	// Если слова нет, то добавляем его
 	word.CreatedAt = time.Now().UTC()
 	word.LastSeen = time.Now().UTC()
-	wordID, err := uc.WordRepo.Add(word)
-	if err != nil {
-		return "", err
+	if err := uc.WordRepo.Add(word); err != nil {
+		return err
 	}
-	return wordID, nil
+	return nil
 }
 
 func (uc *WordUC) Delete(userID int64, word string) error {

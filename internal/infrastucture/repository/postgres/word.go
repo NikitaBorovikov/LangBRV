@@ -18,23 +18,13 @@ func NewWordRepo(db *sqlx.DB) *WordRepo {
 	}
 }
 
-func (r *WordRepo) Add(word *model.Word) (string, error) {
+func (r *WordRepo) Add(word *model.Word) error {
 	query := `INSERT INTO words (user_id, original, translation, last_seen, created_at)
 	VALUES (:user_id, :original, :translation, :last_seen, :created_at)
 	RETURNING word_id`
 
-	rows, err := r.db.NamedQuery(query, word)
-	if err != nil {
-		return "", err
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		if err := rows.Scan(&word.ID); err != nil {
-			return "", err
-		}
-	}
-	return word.ID, err
+	_, err := r.db.NamedQuery(query, word)
+	return err
 }
 
 func (r *WordRepo) GetDictionaryWordsByPage(userID, pageNum, wordsPerPage int64) ([]model.Word, error) {
