@@ -22,25 +22,6 @@ func (b *Bot) AddWord(userID, chatID int64) {
 	b.sendMessage(chatID, msgText)
 }
 
-func (b *Bot) GetRemindListCommand(userID, chatID int64) {
-	remindList, err := b.uc.WordUC.GetRemindList(userID)
-	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
-
-	remindMsg, err := b.uc.WordUC.FormatRemindList(remindList)
-	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
-	b.sendMessage(chatID, remindMsg)
-}
-
 func (b *Bot) DeleteWordCommand(userID, chatID int64) {
 	state := model.NewUserState(userID, true, 0)
 

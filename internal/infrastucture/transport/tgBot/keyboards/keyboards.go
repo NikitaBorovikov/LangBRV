@@ -43,6 +43,34 @@ var LastDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
+var FirstRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
+	),
+)
+
+var MiddleRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
+		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
+	),
+)
+
+var LastRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
+	),
+)
+
 func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) interface{} {
 	switch pageStatus {
 	case model.FirstPage:
@@ -53,5 +81,18 @@ func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) interface{}
 		return nil
 	default:
 		return MiddleDictionaryPageKeyboard
+	}
+}
+
+func ChooseRemindCardKeyboard(cardStatus model.RemindCardStatus) interface{} {
+	switch cardStatus {
+	case model.FirstCard:
+		return FirstRemindCardKeyboard
+	case model.LastCard:
+		return LastRemindCardKeyboard
+	case model.SingleCard:
+		return nil
+	default:
+		return MiddleRemindCardKeyboard
 	}
 }

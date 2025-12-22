@@ -12,6 +12,7 @@ type Repository struct {
 	WordRepo           *postgres.WordRepo
 	UserStateRepo      *inmemory.UserStateRepo
 	DictionaryPageRepo *inmemory.DictionaryPageRepo
+	RemindCardRepo     *inmemory.RemindCardRepo
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -20,5 +21,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 		WordRepo:           postgres.NewWordRepo(db),
 		UserStateRepo:      inmemory.NewUserStateRepo(),
 		DictionaryPageRepo: inmemory.NewDictionaryPageRepo(),
+		RemindCardRepo:     inmemory.NewRemindCardRepo(),
 	}
 }
