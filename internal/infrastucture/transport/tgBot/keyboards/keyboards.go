@@ -45,11 +45,17 @@ var LastDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var FirstRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
 	),
 )
 
 var MiddleRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
+	),
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
 		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
@@ -57,6 +63,9 @@ var MiddleRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 )
 
 var LastRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
+	),
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
 	),

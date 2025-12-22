@@ -30,7 +30,35 @@ func (uc *RemindCardUC) FormatRemindCard(remindCards model.RemindCard) (string, 
 	var sb strings.Builder
 	sb.Grow(expectedPageSize)
 	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
-	fmt.Fprintf(&sb, "%s - <span class=\"tg-spoiler\">%s</span>", currentWord.Original, currentWord.Translation)
+	fmt.Fprintf(&sb, "%s - %s", currentWord.Original, currentWord.Translation)
+	return sb.String(), nil
+}
+
+func (uc *RemindCardUC) FormatClosedRemindCard(remindCards model.RemindCard) (string, error) {
+	if len(remindCards.Words) == 0 {
+		return "", apperrors.ErrNoWordsToRemind
+	}
+
+	currentWord := remindCards.Words[remindCards.CurrentCard-1]
+
+	var sb strings.Builder
+	sb.Grow(expectedPageSize)
+	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
+	fmt.Fprintf(&sb, "%s - _________", currentWord.Original)
+	return sb.String(), nil
+}
+
+func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindCard) (string, error) {
+	if len(remindCards.Words) == 0 {
+		return "", apperrors.ErrNoWordsToRemind
+	}
+
+	currentWord := remindCards.Words[remindCards.CurrentCard-1]
+
+	var sb strings.Builder
+	sb.Grow(expectedPageSize)
+	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
+	fmt.Fprintf(&sb, "%s - %s", currentWord.Original, currentWord.Translation)
 	return sb.String(), nil
 }
 

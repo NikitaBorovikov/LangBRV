@@ -32,6 +32,7 @@ const (
 
 	NextCardCallabck     = "nextCard"
 	PreviousCardCallback = "previousCard"
+	ShowWordCallback     = "showWord"
 )
 
 type Bot struct {
@@ -155,6 +156,9 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 
 	case PreviousPageCallback:
 		b.GetAnotherDictionaryPage(userID, chatID, Previous)
+
+	case ShowWordCallback:
+		b.ShowRemindCard(userID, chatID)
 
 	case NextCardCallabck:
 		b.GetAnotherRemindCard(userID, chatID, Next)
