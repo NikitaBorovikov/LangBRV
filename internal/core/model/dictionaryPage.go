@@ -7,9 +7,7 @@ const (
 	FirstPage  DictionaryPageStatus = "FIRST"
 	MiddlePage DictionaryPageStatus = "MIDDLE"
 	LastPage   DictionaryPageStatus = "LAST"
-)
 
-const (
 	DefaultPageNumber = 1
 )
 

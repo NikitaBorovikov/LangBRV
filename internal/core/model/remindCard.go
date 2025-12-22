@@ -20,10 +20,12 @@ type RemindCard struct {
 	Words       []Word
 }
 
-func NewRemindCard(userID int64) *RemindCard {
+func NewRemindCard(userID int64, words []Word) *RemindCard {
 	return &RemindCard{
 		UserID:      userID,
 		CurrentCard: DefaultCardNumber,
+		TotalCards:  len(words),
+		Words:       words,
 	}
 }
 

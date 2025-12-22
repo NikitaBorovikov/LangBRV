@@ -10,7 +10,6 @@ import (
 )
 
 func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
-	card := model.NewRemindCard(userID)
 	remindList, err := b.uc.WordUC.GetRemindList(userID)
 	if err != nil {
 		logrus.Error(err)
@@ -19,8 +18,7 @@ func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
 		return
 	}
 
-	card.TotalCards = len(remindList) // Одно слово на карточке
-	card.Words = remindList
+	card := model.NewRemindCard(userID, remindList)
 	card.DetermineStatus()
 
 	if err := b.uc.RemindCardUC.Save(card); err != nil {

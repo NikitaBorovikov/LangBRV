@@ -11,7 +11,7 @@ import (
 
 func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 	page := model.NewDictionaryPage(userID)
-	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(page.UserID)
+	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(userID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
