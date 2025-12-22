@@ -30,7 +30,7 @@ func (uc *RemindCardUC) FormatRemindCard(remindCards model.RemindCard) (string, 
 	var sb strings.Builder
 	sb.Grow(expectedPageSize)
 	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
-	fmt.Fprintf(&sb, "%s - %s", currentWord.Original, currentWord.Translation)
+	fmt.Fprintf(&sb, "%s - <span class=\"tg-spoiler\">%s</span>", currentWord.Original, currentWord.Translation)
 	return sb.String(), nil
 }
 
