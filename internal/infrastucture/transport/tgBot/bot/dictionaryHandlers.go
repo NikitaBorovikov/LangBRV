@@ -9,13 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type PageNavigation string
-
-const (
-	Next     PageNavigation = "NEXT"
-	Previous PageNavigation = "PREVIOUS"
-)
-
 func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 	page := model.NewDictionaryPage(userID)
 	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(page.UserID)
@@ -103,7 +96,7 @@ func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 	b.updateMessage(chatID, userState.LastMsgID, formatedPage, keyboard)
 }
 
-func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation PageNavigation) {
+func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation Navigation) {
 	page, err := b.uc.DictionaryPageUC.Get(userID)
 	if err != nil {
 		logrus.Error(err)

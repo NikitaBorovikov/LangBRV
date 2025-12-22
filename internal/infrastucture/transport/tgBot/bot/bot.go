@@ -11,6 +11,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type Navigation string
+
+const (
+	Next     Navigation = "NEXT"
+	Previous Navigation = "PREVIOUS"
+)
+
 const (
 	StartCommand         = "start"
 	AddWordCommand       = "add"
@@ -22,6 +29,9 @@ const (
 	PreviousPageCallback  = "previousPage"
 	AddWordCallback       = "addWord"
 	GetDictionaryCallback = "getDictionary"
+
+	NextCardCallabck     = "nextCard"
+	PreviousCardCallback = "previousCard"
 )
 
 type Bot struct {
@@ -101,7 +111,7 @@ func (b *Bot) handleCommands(update *tgbotapi.Message) {
 		b.GetDictionaryCommand(userID, chatID)
 
 	case RemindCommand:
-		b.GetRemindListCommand(userID, chatID)
+		b.GetRemindCardCommand(userID, chatID)
 
 	case DeleteWordCommand:
 		b.DeleteWordCommand(userID, chatID)
@@ -145,6 +155,12 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 
 	case PreviousPageCallback:
 		b.GetAnotherDictionaryPage(userID, chatID, Previous)
+
+	case NextCardCallabck:
+		b.GetAnotherRemindCard(userID, chatID, Next)
+
+	case PreviousCardCallback:
+		b.GetAnotherRemindCard(userID, chatID, Previous)
 
 	case AddWordCallback:
 		b.AddWord(userID, chatID)
