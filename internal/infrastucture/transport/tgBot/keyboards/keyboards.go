@@ -43,7 +43,7 @@ var LastDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-var FirstRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var FirstClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
 	),
@@ -52,7 +52,7 @@ var FirstRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-var MiddleRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var MiddleClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
 	),
@@ -62,10 +62,29 @@ var MiddleRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-var LastRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var LastClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
 	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
+	),
+)
+
+var FirstOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
+	),
+)
+
+var MiddleOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
+		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
+	),
+)
+
+var LastOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
 	),
@@ -84,15 +103,28 @@ func ChooseDictionaryKeyboard(pageStatus model.DictionaryPageStatus) interface{}
 	}
 }
 
-func ChooseRemindCardKeyboard(cardStatus model.RemindCardStatus) interface{} {
+func ChooseClosedRemindCardKeyboard(cardStatus model.RemindCardStatus) interface{} {
 	switch cardStatus {
 	case model.FirstCard:
-		return FirstRemindCardKeyboard
+		return FirstClosedRemindCardKeyboard
 	case model.LastCard:
-		return LastRemindCardKeyboard
+		return LastClosedRemindCardKeyboard
 	case model.SingleCard:
 		return nil
 	default:
-		return MiddleRemindCardKeyboard
+		return MiddleClosedRemindCardKeyboard
+	}
+}
+
+func ChooseOpenedRemindCardKeyboard(cardStatus model.RemindCardStatus) interface{} {
+	switch cardStatus {
+	case model.FirstCard:
+		return FirstOpenedRemindCardKeyboard
+	case model.LastCard:
+		return LastOpenedRemindCardKeyboard
+	case model.SingleCard:
+		return nil
+	default:
+		return MiddleOpenedRemindCardKeyboard
 	}
 }

@@ -28,7 +28,7 @@ func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
 		return
 	}
 
-	keyboardType := keyboards.ChooseRemindCardKeyboard(card.Status)
+	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Status)
 
 	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*card)
 	if err != nil {
@@ -57,7 +57,7 @@ func (b *Bot) GetAnotherRemindCard(userID, chatID int64, navigation Navigation) 
 	}
 
 	card.DetermineStatus()
-	keyboardType := keyboards.ChooseRemindCardKeyboard(card.Status)
+	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Status)
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
 		b.sendMessage(chatID, b.msg.Errors.Unknown)
@@ -90,7 +90,7 @@ func (b *Bot) ShowRemindCard(userID, chatID int64) {
 		return
 	}
 	card.DetermineStatus()
-	keyboardType := keyboards.ChooseRemindCardKeyboard(card.Status)
+	keyboardType := keyboards.ChooseOpenedRemindCardKeyboard(card.Status)
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
 		b.sendMessage(chatID, b.msg.Errors.Unknown)

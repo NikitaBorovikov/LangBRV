@@ -44,7 +44,7 @@ func (uc *RemindCardUC) FormatClosedRemindCard(remindCards model.RemindCard) (st
 	var sb strings.Builder
 	sb.Grow(expectedPageSize)
 	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
-	fmt.Fprintf(&sb, "%s - _________", currentWord.Original)
+	fmt.Fprintf(&sb, "<b>%s - _________</b>", currentWord.Original)
 	return sb.String(), nil
 }
 
@@ -58,7 +58,7 @@ func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindCard) (st
 	var sb strings.Builder
 	sb.Grow(expectedPageSize)
 	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
-	fmt.Fprintf(&sb, "%s - %s", currentWord.Original, currentWord.Translation)
+	fmt.Fprintf(&sb, "<b>%s - %s</b>", currentWord.Original, currentWord.Translation)
 	return sb.String(), nil
 }
 
