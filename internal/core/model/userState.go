@@ -1,9 +1,9 @@
 package model
 
 type UserState struct {
-	UserID     int64
-	DeleteMode bool
-	LastMsgID  int
+	UserID        int64
+	DeleteMode    bool
+	LastMessageID int
 }
 
 func NewUserState(userID int64, deleteMode bool) *UserState {

@@ -54,7 +54,7 @@ func (b *Bot) SaveWord(state *model.UserState, chatID int64, text string) {
 
 	msgText := b.msg.Success.WordAdded
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
-	state.LastMsgID = msgID
+	state.LastMessageID = msgID
 }
 
 func (b *Bot) DeleteWord(state *model.UserState, chatID int64, text string) {
@@ -70,5 +70,5 @@ func (b *Bot) DeleteWord(state *model.UserState, chatID int64, text string) {
 	}
 	msgText := b.msg.Success.WordDeleted
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
-	state.LastMsgID = msgID
+	state.LastMessageID = msgID
 }

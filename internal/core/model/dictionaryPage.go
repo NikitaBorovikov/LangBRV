@@ -1,23 +1,23 @@
 package model
 
-type DictionaryPageStatus string
+type DictionaryPagePosition string
 
 const (
-	SinglePage DictionaryPageStatus = "SINGLE"
-	FirstPage  DictionaryPageStatus = "FIRST"
-	MiddlePage DictionaryPageStatus = "MIDDLE"
-	LastPage   DictionaryPageStatus = "LAST"
+	SinglePage DictionaryPagePosition = "SINGLE"
+	FirstPage  DictionaryPagePosition = "FIRST"
+	MiddlePage DictionaryPagePosition = "MIDDLE"
+	LastPage   DictionaryPagePosition = "LAST"
 
 	DefaultPageNumber = 1
 )
 
 type DictionaryPage struct {
-	UserID          int64
-	CurrentPage     int64
-	TotalPages      int64
-	Status          DictionaryPageStatus
-	DictionaryMsgID int
-	Words           []Word
+	UserID      int64
+	CurrentPage int64
+	TotalPages  int64
+	Position    DictionaryPagePosition
+	MessageID   int
+	Words       []Word
 }
 
 func NewDictionaryPage(userID int64) *DictionaryPage {
@@ -27,15 +27,15 @@ func NewDictionaryPage(userID int64) *DictionaryPage {
 	}
 }
 
-func (p *DictionaryPage) DetermineStatus() {
+func (p *DictionaryPage) DeterminePosition() {
 	switch {
 	case p.CurrentPage == 1 && p.TotalPages == 1:
-		p.Status = SinglePage
+		p.Position = SinglePage
 	case p.CurrentPage == 1 && p.TotalPages > 1:
-		p.Status = FirstPage
+		p.Position = FirstPage
 	case p.CurrentPage != 1 && p.CurrentPage == p.TotalPages:
-		p.Status = LastPage
+		p.Position = LastPage
 	default:
-		p.Status = MiddlePage
+		p.Position = MiddlePage
 	}
 }

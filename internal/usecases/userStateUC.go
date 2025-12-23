@@ -14,7 +14,7 @@ func NewUserStateUC(sr repository.UserStateRepo) *UserStateUC {
 }
 
 func (uc *UserStateUC) Set(s *model.UserState) error {
-	return uc.UserStateRepo.Set(s)
+	return uc.UserStateRepo.Save(s)
 }
 
 func (uc *UserStateUC) Get(chatID int64) (*model.UserState, error) {

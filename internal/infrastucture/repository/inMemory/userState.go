@@ -21,7 +21,7 @@ func NewUserStateRepo() *UserStateRepo {
 	}
 }
 
-func (r *UserStateRepo) Set(state *model.UserState) error {
+func (r *UserStateRepo) Save(state *model.UserState) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

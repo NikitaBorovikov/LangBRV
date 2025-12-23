@@ -19,7 +19,7 @@ func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
 	}
 
 	card := model.NewRemindCard(userID, remindList)
-	card.DetermineStatus()
+	card.DeterminePosition()
 
 	if err := b.uc.RemindCardUC.Save(card); err != nil {
 		logrus.Error(err)
@@ -28,7 +28,7 @@ func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
 		return
 	}
 
-	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Status)
+	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Position)
 
 	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*card)
 	if err != nil {
@@ -38,7 +38,7 @@ func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
 		return
 	}
 
-	card.RemindMsgID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboardType)
+	card.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboardType)
 }
 
 func (b *Bot) GetAnotherRemindCard(userID, chatID int64, navigation Navigation) {
@@ -56,8 +56,8 @@ func (b *Bot) GetAnotherRemindCard(userID, chatID int64, navigation Navigation) 
 		card.CurrentCard--
 	}
 
-	card.DetermineStatus()
-	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Status)
+	card.DeterminePosition()
+	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Position)
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
 		b.sendMessage(chatID, b.msg.Errors.Unknown)
@@ -78,7 +78,7 @@ func (b *Bot) GetAnotherRemindCard(userID, chatID int64, navigation Navigation) 
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, card.RemindMsgID, cardMsg, keyboard)
+	b.updateMessage(chatID, card.MessageID, cardMsg, keyboard)
 }
 
 func (b *Bot) ShowRemindCard(userID, chatID int64) {
@@ -89,8 +89,8 @@ func (b *Bot) ShowRemindCard(userID, chatID int64) {
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	card.DetermineStatus()
-	keyboardType := keyboards.ChooseOpenedRemindCardKeyboard(card.Status)
+	card.DeterminePosition()
+	keyboardType := keyboards.ChooseOpenedRemindCardKeyboard(card.Position)
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
 		b.sendMessage(chatID, b.msg.Errors.Unknown)
@@ -104,5 +104,5 @@ func (b *Bot) ShowRemindCard(userID, chatID int64) {
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, card.RemindMsgID, cardMsg, keyboard)
+	b.updateMessage(chatID, card.MessageID, cardMsg, keyboard)
 }

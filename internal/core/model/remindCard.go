@@ -1,22 +1,22 @@
 package model
 
-type RemindCardStatus string
+type RemindCardPosition string
 
 const (
-	SingleCard RemindCardStatus = "SINGLE"
-	FirstCard  RemindCardStatus = "FIRST"
-	MiddleCard RemindCardStatus = "MIDDLE"
-	LastCard   RemindCardStatus = "LAST"
+	SingleCard RemindCardPosition = "SINGLE"
+	FirstCard  RemindCardPosition = "FIRST"
+	MiddleCard RemindCardPosition = "MIDDLE"
+	LastCard   RemindCardPosition = "LAST"
 
 	DefaultCardNumber int = 1
 )
 
 type RemindCard struct {
 	UserID      int64
-	Status      RemindCardStatus
 	CurrentCard int
 	TotalCards  int
-	RemindMsgID int
+	Position    RemindCardPosition
+	MessageID   int
 	Words       []Word
 }
 
@@ -29,15 +29,15 @@ func NewRemindCard(userID int64, words []Word) *RemindCard {
 	}
 }
 
-func (c *RemindCard) DetermineStatus() {
+func (c *RemindCard) DeterminePosition() {
 	switch {
 	case c.CurrentCard == 1 && c.TotalCards == 1:
-		c.Status = SingleCard
+		c.Position = SingleCard
 	case c.CurrentCard == 1 && c.TotalCards > 1:
-		c.Status = FirstCard
+		c.Position = FirstCard
 	case c.CurrentCard != 1 && c.CurrentCard == c.TotalCards:
-		c.Status = LastCard
+		c.Position = LastCard
 	default:
-		c.Status = MiddleCard
+		c.Position = MiddleCard
 	}
 }

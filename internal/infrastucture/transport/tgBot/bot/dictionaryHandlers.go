@@ -16,7 +16,7 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		if errMsgText == b.msg.Errors.NoWords {
-			page.DictionaryMsgID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
+			page.MessageID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
 			return
 		}
 		b.sendMessage(chatID, errMsgText)
@@ -24,9 +24,9 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 	}
 
 	page.TotalPages = totalPages
-	page.DetermineStatus()
+	page.DeterminePosition()
 
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Status)
+	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
 
 	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)
@@ -42,7 +42,7 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	page.DictionaryMsgID = b.sendMessageWithKeyboard(chatID, formatedPage, keyboardType)
+	page.MessageID = b.sendMessageWithKeyboard(chatID, formatedPage, keyboardType)
 }
 
 func (b *Bot) GetDictionaryCB(userID, chatID int64) {
@@ -60,7 +60,7 @@ func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		if errMsgText == b.msg.Errors.NoWords {
-			page.DictionaryMsgID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
+			page.MessageID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
 			return
 		}
 		b.sendMessage(chatID, errMsgText)
@@ -68,9 +68,9 @@ func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 	}
 
 	page.TotalPages = totalPages
-	page.DetermineStatus()
+	page.DeterminePosition()
 
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Status)
+	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
 		b.sendMessage(chatID, b.msg.Errors.Unknown)
@@ -92,8 +92,8 @@ func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 		return
 	}
 
-	page.DictionaryMsgID = userState.LastMsgID
-	b.updateMessage(chatID, userState.LastMsgID, formatedPage, keyboard)
+	page.MessageID = userState.LastMessageID
+	b.updateMessage(chatID, userState.LastMessageID, formatedPage, keyboard)
 }
 
 func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation Navigation) {
@@ -111,8 +111,8 @@ func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation Navigati
 		page.CurrentPage--
 	}
 
-	page.DetermineStatus()
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Status)
+	page.DeterminePosition()
+	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
 
 	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
 	if !ok {
@@ -134,5 +134,5 @@ func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation Navigati
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, page.DictionaryMsgID, formatedPage, keyboard)
+	b.updateMessage(chatID, page.MessageID, formatedPage, keyboard)
 }
