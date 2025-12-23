@@ -10,7 +10,7 @@ import (
 )
 
 func (b *Bot) AddWord(userID, chatID int64) {
-	state := model.NewUserState(userID, false, 0)
+	state := model.NewUserState(userID, false)
 
 	if err := b.uc.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)
@@ -23,7 +23,7 @@ func (b *Bot) AddWord(userID, chatID int64) {
 }
 
 func (b *Bot) DeleteWordCommand(userID, chatID int64) {
-	state := model.NewUserState(userID, true, 0)
+	state := model.NewUserState(userID, true)
 
 	if err := b.uc.UserStateUC.Set(state); err != nil {
 		logrus.Error(err)

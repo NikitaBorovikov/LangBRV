@@ -130,7 +130,7 @@ func (b *Bot) handleMessages(update *tgbotapi.Message) {
 
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
-		userState = model.NewUserState(userID, false, 0)
+		userState = model.NewUserState(userID, false)
 		if err := b.uc.UserStateUC.Set(userState); err != nil {
 			logrus.Error(err)
 			errMsgText := apperrors.HandleError(err, &b.msg.Errors)

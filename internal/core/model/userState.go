@@ -6,10 +6,9 @@ type UserState struct {
 	LastMsgID  int
 }
 
-func NewUserState(userID int64, deleteMode bool, msgID int) *UserState {
+func NewUserState(userID int64, deleteMode bool) *UserState {
 	return &UserState{
 		UserID:     userID,
 		DeleteMode: deleteMode,
-		LastMsgID:  msgID,
 	}
 }
