@@ -5,7 +5,6 @@ import (
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,7 +25,7 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 	page.TotalPages = totalPages
 	page.DeterminePosition()
 
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
+	keyboard := keyboards.ChooseDictionaryKeyboard(page.Position)
 
 	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)
@@ -42,16 +41,19 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	page.MessageID = b.sendMessageWithKeyboard(chatID, formatedPage, keyboardType)
+	page.MessageID = b.sendMessageWithKeyboard(chatID, formatedPage, keyboard)
 }
 
 func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
-		logrus.Error(err)
-		msgText := b.msg.Errors.UnknownMsg
-		b.sendMessage(chatID, msgText)
-		return
+		userState = model.NewUserState(userID, false)
+		if err := b.uc.UserStateUC.Set(userState); err != nil {
+			logrus.Error(err)
+			errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+			b.sendMessage(chatID, errMsgText)
+			return
+		}
 	}
 
 	page := model.NewDictionaryPage(userID)
@@ -70,12 +72,7 @@ func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 	page.TotalPages = totalPages
 	page.DeterminePosition()
 
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
-	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-	if !ok {
-		b.sendMessage(chatID, b.msg.Errors.Unknown)
-		return
-	}
+	keyboard := keyboards.ChooseDictionaryKeyboard(page.Position)
 
 	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)
@@ -112,13 +109,7 @@ func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation Navigati
 	}
 
 	page.DeterminePosition()
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
-
-	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-	if !ok {
-		b.sendMessage(chatID, b.msg.Errors.Unknown)
-		return
-	}
+	keyboard := keyboards.ChooseDictionaryKeyboard(page.Position)
 
 	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
 		logrus.Error(err)

@@ -5,7 +5,6 @@ import (
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
 
@@ -57,12 +56,7 @@ func (b *Bot) GetAnotherRemindCard(userID, chatID int64, navigation Navigation) 
 	}
 
 	card.DeterminePosition()
-	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Position)
-	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-	if !ok {
-		b.sendMessage(chatID, b.msg.Errors.Unknown)
-		return
-	}
+	keyboard := keyboards.ChooseClosedRemindCardKeyboard(card.Position)
 
 	if err := b.uc.RemindCardUC.Save(card); err != nil {
 		logrus.Error(err)
@@ -90,12 +84,7 @@ func (b *Bot) ShowRemindCard(userID, chatID int64) {
 		return
 	}
 	card.DeterminePosition()
-	keyboardType := keyboards.ChooseOpenedRemindCardKeyboard(card.Position)
-	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-	if !ok {
-		b.sendMessage(chatID, b.msg.Errors.Unknown)
-		return
-	}
+	keyboard := keyboards.ChooseOpenedRemindCardKeyboard(card.Position)
 
 	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*card)
 	if err != nil {

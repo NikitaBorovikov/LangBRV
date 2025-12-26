@@ -198,9 +198,16 @@ func (b *Bot) sendMessageWithKeyboard(chatID int64, text string, keyboard interf
 	return msgInfo.MessageID
 }
 
-func (b *Bot) updateMessage(chatID int64, msgID int, text string, keyboard tgbotapi.InlineKeyboardMarkup) {
+func (b *Bot) updateMessage(chatID int64, msgID int, text string, keyboardType interface{}) {
 	msg := tgbotapi.NewEditMessageText(chatID, msgID, text)
 	msg.ParseMode = tgbotapi.ModeHTML
+	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
+	if !ok {
+		if _, err := b.bot.Send(msg); err != nil {
+			logrus.Errorf("failed to update message to chat id: %d, err: %v", chatID, err)
+		}
+		return
+	}
 	msg.ReplyMarkup = &keyboard
 	if _, err := b.bot.Send(msg); err != nil {
 		logrus.Errorf("failed to update message to chat id: %d, err: %v", chatID, err)
