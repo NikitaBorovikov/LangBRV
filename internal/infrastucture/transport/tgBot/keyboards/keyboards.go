@@ -90,39 +90,39 @@ var LastOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-func ChooseDictionaryKeyboard(pageStatus model.DictionaryPagePosition) interface{} {
+func ChooseDictionaryKeyboard(pageStatus model.Position) interface{} {
 	switch pageStatus {
-	case model.FirstPage:
+	case model.First:
 		return FirstDictionaryPageKeyboard
-	case model.LastPage:
+	case model.Last:
 		return LastDictionaryPageKeyboard
-	case model.SinglePage:
+	case model.Single:
 		return nil
 	default:
 		return MiddleDictionaryPageKeyboard
 	}
 }
 
-func ChooseClosedRemindCardKeyboard(cardStatus model.RemindCardPosition) interface{} {
+func ChooseClosedRemindCardKeyboard(cardStatus model.Position) interface{} {
 	switch cardStatus {
-	case model.FirstCard:
+	case model.First:
 		return FirstClosedRemindCardKeyboard
-	case model.LastCard:
+	case model.Last:
 		return LastClosedRemindCardKeyboard
-	case model.SingleCard:
+	case model.Single:
 		return nil
 	default:
 		return MiddleClosedRemindCardKeyboard
 	}
 }
 
-func ChooseOpenedRemindCardKeyboard(cardStatus model.RemindCardPosition) interface{} {
+func ChooseOpenedRemindCardKeyboard(cardStatus model.Position) interface{} {
 	switch cardStatus {
-	case model.FirstCard:
+	case model.First:
 		return FirstOpenedRemindCardKeyboard
-	case model.LastCard:
+	case model.Last:
 		return LastOpenedRemindCardKeyboard
-	case model.SingleCard:
+	case model.Single:
 		return nil
 	default:
 		return MiddleOpenedRemindCardKeyboard

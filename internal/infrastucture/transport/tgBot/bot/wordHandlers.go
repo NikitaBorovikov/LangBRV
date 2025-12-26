@@ -9,23 +9,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (b *Bot) AddWord(userID, chatID int64) {
-	state := model.NewUserState(userID, false)
-
-	if err := b.uc.UserStateUC.Set(state); err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
+func (b *Bot) AddWord(us *model.UserState, chatID int64) {
+	us.Mode = model.AddMode
 	msgText := b.msg.Info.AddWord
 	b.sendMessage(chatID, msgText)
 }
 
-func (b *Bot) DeleteWordCommand(userID, chatID int64) {
-	state := model.NewUserState(userID, true)
-
-	if err := b.uc.UserStateUC.Set(state); err != nil {
+func (b *Bot) DeleteWordCommand(us *model.UserState, chatID int64) {
+	us.Mode = model.DeleteMode
+	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
@@ -35,8 +27,8 @@ func (b *Bot) DeleteWordCommand(userID, chatID int64) {
 	b.sendMessage(chatID, msgText)
 }
 
-func (b *Bot) SaveWord(state *model.UserState, chatID int64, text string) {
-	req := dto.NewAddWordRequest(state.UserID, text)
+func (b *Bot) SaveWord(us *model.UserState, chatID int64, text string) {
+	req := dto.NewAddWordRequest(us.UserID, text)
 	word, err := req.ToDomainWord()
 	if err != nil {
 		logrus.Error(err)
@@ -54,15 +46,15 @@ func (b *Bot) SaveWord(state *model.UserState, chatID int64, text string) {
 
 	msgText := b.msg.Success.WordAdded
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
-	state.LastMessageID = msgID
+	us.LastMessageID = msgID
 }
 
-func (b *Bot) DeleteWord(state *model.UserState, chatID int64, text string) {
+func (b *Bot) DeleteWord(us *model.UserState, chatID int64, text string) {
 	defer func() {
-		state.DeleteMode = false // Выключаем режим удаления
+		us.Mode = model.AddMode // Выключаем режим удаления
 	}()
 
-	if err := b.uc.WordUC.Delete(state.UserID, text); err != nil {
+	if err := b.uc.WordUC.Delete(us.UserID, text); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
@@ -70,5 +62,5 @@ func (b *Bot) DeleteWord(state *model.UserState, chatID int64, text string) {
 	}
 	msgText := b.msg.Success.WordDeleted
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
-	state.LastMessageID = msgID
+	us.LastMessageID = msgID
 }

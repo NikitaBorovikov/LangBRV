@@ -13,7 +13,7 @@ func NewUserStateUC(sr repository.UserStateRepo) *UserStateUC {
 	return &UserStateUC{UserStateRepo: sr}
 }
 
-func (uc *UserStateUC) Set(s *model.UserState) error {
+func (uc *UserStateUC) Save(s *model.UserState) error {
 	return uc.UserStateRepo.Save(s)
 }
 

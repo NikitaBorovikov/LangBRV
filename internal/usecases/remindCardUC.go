@@ -9,14 +9,12 @@ import (
 )
 
 type RemindCardUC struct {
-	RemindCardRepo repository.RemindCardRepo
-	WordRepo       repository.WordRepo
+	WordRepo repository.WordRepo
 }
 
-func NewRemindCardUC(rc repository.RemindCardRepo, wr repository.WordRepo) *RemindCardUC {
+func NewRemindCardUC(wr repository.WordRepo) *RemindCardUC {
 	return &RemindCardUC{
-		RemindCardRepo: rc,
-		WordRepo:       wr,
+		WordRepo: wr,
 	}
 }
 
@@ -60,12 +58,4 @@ func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindCard) (st
 	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
 	fmt.Fprintf(&sb, "<b>%s - %s</b>", currentWord.Original, currentWord.Translation)
 	return sb.String(), nil
-}
-
-func (uc *RemindCardUC) Save(card *model.RemindCard) error {
-	return uc.RemindCardRepo.Save(card)
-}
-
-func (uc *RemindCardUC) Get(userID int64) (*model.RemindCard, error) {
-	return uc.RemindCardRepo.Get(userID)
 }

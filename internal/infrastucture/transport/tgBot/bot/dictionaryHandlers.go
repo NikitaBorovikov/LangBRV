@@ -5,13 +5,12 @@ import (
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
 
-func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
-	page := model.NewDictionaryPage(userID)
-	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(userID)
+func (b *Bot) GetDictionaryCommand(us *model.UserState, chatID int64) {
+	page := model.NewDictionaryPage()
+	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(us.UserID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -26,41 +25,36 @@ func (b *Bot) GetDictionaryCommand(userID, chatID int64) {
 	page.TotalPages = totalPages
 	page.DeterminePosition()
 
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
+	keyboard := keyboards.ChooseDictionaryKeyboard(page.Position)
 
-	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
+	us.DictionaryPage = page
+	us.RemindCard = nil
+	us.Mode = model.ViewDictionaryMode
 
-	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(page)
+	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(us.UserID, page)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	page.MessageID = b.sendMessageWithKeyboard(chatID, formatedPage, keyboardType)
-}
 
-func (b *Bot) GetDictionaryCB(userID, chatID int64) {
-	userState, err := b.uc.UserStateUC.Get(userID)
-	if err != nil || userState == nil {
+	us.DictionaryPage.MessageID = b.sendMessageWithKeyboard(chatID, formatedPage, keyboard)
+
+	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)
-		msgText := b.msg.Errors.UnknownMsg
-		b.sendMessage(chatID, msgText)
 		return
 	}
+}
 
-	page := model.NewDictionaryPage(userID)
-	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(page.UserID)
+func (b *Bot) GetDictionaryCB(us *model.UserState, chatID int64) {
+	page := model.NewDictionaryPage()
+	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(us.UserID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		if errMsgText == b.msg.Errors.NoWords {
-			page.MessageID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
+			us.DictionaryPage.MessageID = b.sendMessageWithKeyboard(chatID, errMsgText, keyboards.AddWordKeyboard)
 			return
 		}
 		b.sendMessage(chatID, errMsgText)
@@ -69,70 +63,56 @@ func (b *Bot) GetDictionaryCB(userID, chatID int64) {
 
 	page.TotalPages = totalPages
 	page.DeterminePosition()
+	page.MessageID = us.LastMessageID
 
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
-	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-	if !ok {
-		b.sendMessage(chatID, b.msg.Errors.Unknown)
-		return
-	}
+	keyboard := keyboards.ChooseDictionaryKeyboard(page.Position)
 
-	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
+	us.DictionaryPage = page
+	us.RemindCard = nil
+	us.Mode = model.ViewDictionaryMode
+
+	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
 
-	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(page)
+	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(us.UserID, page)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-
-	page.MessageID = userState.LastMessageID
-	b.updateMessage(chatID, userState.LastMessageID, formatedPage, keyboard)
+	b.updateMessage(chatID, us.LastMessageID, formatedPage, keyboard)
 }
 
-func (b *Bot) GetAnotherDictionaryPage(userID, chatID int64, navigation Navigation) {
-	page, err := b.uc.DictionaryPageUC.Get(userID)
-	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
-
+func (b *Bot) GetAnotherDictionaryPage(us *model.UserState, chatID int64, navigation Navigation) {
 	if navigation == Next {
-		page.CurrentPage++
+		us.DictionaryPage.CurrentPage++
 	} else {
-		page.CurrentPage--
+		us.DictionaryPage.CurrentPage--
 	}
 
-	page.DeterminePosition()
-	keyboardType := keyboards.ChooseDictionaryKeyboard(page.Position)
+	us.DictionaryPage.DeterminePosition()
+	keyboard := keyboards.ChooseDictionaryKeyboard(us.DictionaryPage.Position)
 
-	keyboard, ok := keyboardType.(tgbotapi.InlineKeyboardMarkup)
-	if !ok {
-		b.sendMessage(chatID, b.msg.Errors.Unknown)
-		return
-	}
-
-	if err := b.uc.DictionaryPageUC.Save(page); err != nil {
+	us.RemindCard = nil
+	us.Mode = model.ViewDictionaryMode
+	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
 
-	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(page)
+	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(us.UserID, us.DictionaryPage)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, page.MessageID, formatedPage, keyboard)
+	b.updateMessage(chatID, us.DictionaryPage.MessageID, formatedPage, keyboard)
 }
