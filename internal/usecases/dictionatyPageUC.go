@@ -14,19 +14,17 @@ const (
 )
 
 type DictionaryPageUC struct {
-	DictionaryPageRepo repository.DictionaryPageRepo
-	WordRepo           repository.WordRepo
+	WordRepo repository.WordRepo
 }
 
-func NewDictionaryPageUC(pr repository.DictionaryPageRepo, wr repository.WordRepo) *DictionaryPageUC {
+func NewDictionaryPageUC(wr repository.WordRepo) *DictionaryPageUC {
 	return &DictionaryPageUC{
-		DictionaryPageRepo: pr,
-		WordRepo:           wr,
+		WordRepo: wr,
 	}
 }
 
-func (uc *DictionaryPageUC) FormatPage(pageInfo *model.DictionaryPage) (string, error) {
-	words, err := uc.WordRepo.GetDictionaryWordsByPage(pageInfo.UserID, pageInfo.CurrentPage, wordsPerPage)
+func (uc *DictionaryPageUC) FormatPage(userID int64, pageInfo *model.DictionaryPage) (string, error) {
+	words, err := uc.WordRepo.GetDictionaryWordsByPage(userID, pageInfo.CurrentPage, wordsPerPage)
 	if err != nil {
 		return "", err
 	}
@@ -60,12 +58,4 @@ func (uc *DictionaryPageUC) GetAmountOfPages(userID int64) (int64, error) {
 
 	totalPages := (amountOfWords + wordsPerPage - 1) / wordsPerPage
 	return totalPages, nil
-}
-
-func (uc *DictionaryPageUC) Save(page *model.DictionaryPage) error {
-	return uc.DictionaryPageRepo.Save(page)
-}
-
-func (uc *DictionaryPageUC) Get(userID int64) (*model.DictionaryPage, error) {
-	return uc.DictionaryPageRepo.Get(userID)
 }

@@ -100,22 +100,33 @@ func (b *Bot) handleCommands(update *tgbotapi.Message) {
 	userID := update.From.ID
 	chatID := update.Chat.ID
 
+	userState, err := b.uc.UserStateUC.Get(userID)
+	if err != nil || userState == nil {
+		userState = model.NewUserState(userID, model.AddMode)
+		if err := b.uc.UserStateUC.Save(userState); err != nil {
+			logrus.Error(err)
+			errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+			b.sendMessage(chatID, errMsgText)
+			return
+		}
+	}
+
 	switch update.Command() {
 	case StartCommand:
 		username := update.From.UserName
 		b.StartCommand(userID, chatID, username)
 
 	case AddWordCommand:
-		b.AddWord(userID, chatID)
+		b.AddWord(userState, chatID)
 
 	case GetDictionaryCommand:
-		b.GetDictionaryCommand(userID, chatID)
+		b.GetDictionaryCommand(userState, chatID)
 
 	case RemindCommand:
-		b.GetRemindCardCommand(userID, chatID)
+		b.GetRemindCardCommand(userState, chatID)
 
 	case DeleteWordCommand:
-		b.DeleteWordCommand(userID, chatID)
+		b.DeleteWordCommand(userState, chatID)
 
 	default:
 		msgText := b.msg.Errors.UnknownCommand
@@ -130,8 +141,8 @@ func (b *Bot) handleMessages(update *tgbotapi.Message) {
 
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
-		userState = model.NewUserState(userID, false)
-		if err := b.uc.UserStateUC.Set(userState); err != nil {
+		userState = model.NewUserState(userID, model.AddMode)
+		if err := b.uc.UserStateUC.Save(userState); err != nil {
 			logrus.Error(err)
 			errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 			b.sendMessage(chatID, errMsgText)
@@ -139,7 +150,7 @@ func (b *Bot) handleMessages(update *tgbotapi.Message) {
 		}
 	}
 
-	if !userState.DeleteMode {
+	if userState.Mode != model.DeleteMode {
 		b.SaveWord(userState, chatID, text)
 	} else {
 		b.DeleteWord(userState, chatID, text)
@@ -150,27 +161,38 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	userID := update.CallbackQuery.From.ID
 	chatID := update.CallbackQuery.Message.Chat.ID
 
+	userState, err := b.uc.UserStateUC.Get(userID)
+	if err != nil || userState == nil {
+		userState = model.NewUserState(userID, model.AddMode)
+		if err := b.uc.UserStateUC.Save(userState); err != nil {
+			logrus.Error(err)
+			errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+			b.sendMessage(chatID, errMsgText)
+			return
+		}
+	}
+
 	switch update.CallbackQuery.Data {
 	case NextPageCallback:
-		b.GetAnotherDictionaryPage(userID, chatID, Next)
+		b.GetAnotherDictionaryPage(userState, chatID, Next)
 
 	case PreviousPageCallback:
-		b.GetAnotherDictionaryPage(userID, chatID, Previous)
+		b.GetAnotherDictionaryPage(userState, chatID, Previous)
 
 	case ShowWordCallback:
-		b.ShowRemindCard(userID, chatID)
+		b.ShowRemindCard(userState, chatID)
 
 	case NextCardCallabck:
-		b.GetAnotherRemindCard(userID, chatID, Next)
+		b.GetAnotherRemindCard(userState, chatID, Next)
 
 	case PreviousCardCallback:
-		b.GetAnotherRemindCard(userID, chatID, Previous)
+		b.GetAnotherRemindCard(userState, chatID, Previous)
 
 	case AddWordCallback:
-		b.AddWord(userID, chatID)
+		b.AddWord(userState, chatID)
 
 	case GetDictionaryCallback:
-		b.GetDictionaryCB(userID, chatID)
+		b.GetDictionaryCB(userState, chatID)
 
 	default:
 		msgText := b.msg.Errors.Unknown

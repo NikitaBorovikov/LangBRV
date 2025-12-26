@@ -8,8 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
-	remindList, err := b.uc.WordUC.GetRemindList(userID)
+func (b *Bot) GetRemindCardCommand(us *model.UserState, chatID int64) {
+	remindList, err := b.uc.WordUC.GetRemindList(us.UserID)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -17,19 +17,13 @@ func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
 		return
 	}
 
-	card := model.NewRemindCard(userID, remindList)
-	card.DeterminePosition()
+	us.RemindCard = model.NewRemindCard(remindList)
+	us.RemindCard.DeterminePosition()
+	us.Mode = model.RemidMode
 
-	if err := b.uc.RemindCardUC.Save(card); err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
+	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(us.RemindCard.Position)
 
-	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(card.Position)
-
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*card)
+	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -37,61 +31,55 @@ func (b *Bot) GetRemindCardCommand(userID, chatID int64) {
 		return
 	}
 
-	card.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboardType)
+	us.RemindCard.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboardType)
+
+	us.DictionaryPage = nil
+	if err := b.uc.UserStateUC.Save(us); err != nil {
+		logrus.Error(err)
+		return
+	}
 }
 
-func (b *Bot) GetAnotherRemindCard(userID, chatID int64, navigation Navigation) {
-	card, err := b.uc.RemindCardUC.Get(userID)
-	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
-
+func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, navigation Navigation) {
 	if navigation == Next {
-		card.CurrentCard++
+		us.RemindCard.CurrentCard++
 	} else {
-		card.CurrentCard--
+		us.RemindCard.CurrentCard--
 	}
 
-	card.DeterminePosition()
-	keyboard := keyboards.ChooseClosedRemindCardKeyboard(card.Position)
+	us.RemindCard.DeterminePosition()
+	us.Mode = model.RemidMode
+	keyboard := keyboards.ChooseClosedRemindCardKeyboard(us.RemindCard.Position)
 
-	if err := b.uc.RemindCardUC.Save(card); err != nil {
+	us.DictionaryPage = nil
+	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
 
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*card)
+	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, card.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
 }
 
-func (b *Bot) ShowRemindCard(userID, chatID int64) {
-	card, err := b.uc.RemindCardUC.Get(userID)
-	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
-		return
-	}
-	card.DeterminePosition()
-	keyboard := keyboards.ChooseOpenedRemindCardKeyboard(card.Position)
+func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
+	us.RemindCard.DeterminePosition()
+	us.Mode = model.RemidMode
+	keyboard := keyboards.ChooseOpenedRemindCardKeyboard(us.RemindCard.Position)
 
-	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*card)
+	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*us.RemindCard)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, card.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
 }

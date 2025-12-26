@@ -21,7 +21,7 @@ func (r *DictionaryPageRepo) Save(page *model.DictionaryPage) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.page[page.UserID] = page
+	r.page[1] = page //REMOVE
 	return nil
 }
 
