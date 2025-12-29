@@ -47,6 +47,7 @@ func (uc *WordUC) Delete(userID int64, word string) error {
 		return err
 	}
 
+	word = strings.ToLower(word)
 	if err := uc.WordRepo.Delete(userID, word); err != nil {
 		return err
 	}
