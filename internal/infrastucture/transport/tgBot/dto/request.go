@@ -31,7 +31,7 @@ func NewAddWordRequest(userID int64, msg string) *AddWordRequest {
 }
 
 func (r *AddWordRequest) ToDomainWord() (*model.Word, error) {
-	record := strings.Fields(strings.ToLower(r.Msg))
+	record := strings.Split(strings.ToLower(r.Msg), "-")
 	if len(record) != 2 {
 		return nil, apperrors.ErrIncorrectFormat
 	}
