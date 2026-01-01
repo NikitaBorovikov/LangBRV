@@ -71,6 +71,12 @@ var LastClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
+var SingleClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
+	),
+)
+
 var FirstOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
@@ -110,7 +116,7 @@ func ChooseClosedRemindCardKeyboard(cardStatus model.Position) interface{} {
 	case model.Last:
 		return LastClosedRemindCardKeyboard
 	case model.Single:
-		return nil
+		return SingleClosedRemindCardKeyboard
 	default:
 		return MiddleClosedRemindCardKeyboard
 	}
