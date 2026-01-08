@@ -1,0 +1,2 @@
+ALTER TABLE words
+ADD COLUMN IF NOT EXISTS memorization_level SMALLINT;

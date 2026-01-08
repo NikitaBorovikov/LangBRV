@@ -1,0 +1,2 @@
+ALTER TABLE words
+DROP COLUMN IF EXISTS next_remind;
