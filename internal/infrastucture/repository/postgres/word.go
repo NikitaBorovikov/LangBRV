@@ -19,8 +19,8 @@ func NewWordRepo(db *sqlx.DB) *WordRepo {
 }
 
 func (r *WordRepo) Add(word *model.Word) error {
-	query := `INSERT INTO words (user_id, original, translation, last_seen, created_at)
-	VALUES (:user_id, :original, :translation, :last_seen, :created_at)
+	query := `INSERT INTO words (user_id, original, translation, last_seen, next_remind, memorization_level, created_at)
+	VALUES (:user_id, :original, :translation, :last_seen, :next_remind, :memorization_level, :created_at)
 	RETURNING word_id`
 
 	_, err := r.db.NamedQuery(query, word)
@@ -70,9 +70,8 @@ func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, er
 func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 	var remindWords []model.Word
 
-	query := `SELECT original, translation FROM words 
-	WHERE user_id = $1 AND CURRENT_DATE - last_seen::date IN (1, 3, 10, 30, 90)
-	ORDER BY last_seen ASC`
+	query := `SELECT original, translation, memorization_level FROM words
+	WHERE user_id = $1 AND CURRENT_DATE >= next_remind::date`
 
 	err := r.db.Select(&remindWords, query, userID)
 	if err != nil {

@@ -30,12 +30,16 @@ func (uc *WordUC) Add(word *model.Word) error {
 	// Если слово уже есть, то просто обновляем его с новым LastSeen полем
 	if existingWord != nil {
 		existingWord.LastSeen = time.Now().UTC()
+		existingWord.NextRemind = time.Now().UTC()
+		existingWord.MemorizationLevel = 1 //TODO: replace
 		err := uc.WordRepo.Update(existingWord)
 		return err
 	}
 	// Если слова нет, то добавляем его
 	word.CreatedAt = time.Now().UTC()
 	word.LastSeen = time.Now().UTC()
+	word.NextRemind = time.Now().UTC()
+	word.MemorizationLevel = 1
 	if err := uc.WordRepo.Add(word); err != nil {
 		return err
 	}
