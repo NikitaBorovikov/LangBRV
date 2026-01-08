@@ -12,10 +12,14 @@ import (
 )
 
 type Navigation string
+type RememerStatus string
 
 const (
 	Next     Navigation = "NEXT"
 	Previous Navigation = "PREVIOUS"
+
+	RememberWell  RememerStatus = "well"
+	RememberBadly RememerStatus = "badly"
 )
 
 const (
@@ -29,10 +33,12 @@ const (
 	PreviousPageCallback  = "previousPage"
 	AddWordCallback       = "addWord"
 	GetDictionaryCallback = "getDictionary"
+	RemindSessionCallback = "newRemindSession"
 
-	NextCardCallabck     = "nextCard"
-	PreviousCardCallback = "previousCard"
-	ShowWordCallback     = "showWord"
+	RememberWellCallback  = "rememberWell"
+	RememberBadlyCallback = "rememberBadly"
+
+	ShowWordCallback = "showWord"
 )
 
 type Bot struct {
@@ -182,17 +188,20 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	case ShowWordCallback:
 		b.ShowRemindCard(userState, chatID)
 
-	case NextCardCallabck:
-		b.GetAnotherRemindCard(userState, chatID, Next)
+	case RememberWellCallback:
+		b.GetAnotherRemindCard(userState, chatID, RememberWell)
 
-	case PreviousCardCallback:
-		b.GetAnotherRemindCard(userState, chatID, Previous)
+	case RememberBadlyCallback:
+		b.GetAnotherRemindCard(userState, chatID, RememberBadly)
 
 	case AddWordCallback:
 		b.AddWord(userState, chatID)
 
 	case GetDictionaryCallback:
 		b.GetDictionaryCB(userState, chatID)
+
+	case RemindSessionCallback:
+		b.GetAnotherRemindSession(userState, chatID)
 
 	default:
 		msgText := b.msg.Errors.Unknown

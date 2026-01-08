@@ -21,7 +21,7 @@ func (b *Bot) GetRemindCardCommand(us *model.UserState, chatID int64) {
 	us.RemindCard.DeterminePosition()
 	us.Mode = model.RemidMode
 
-	keyboardType := keyboards.ChooseClosedRemindCardKeyboard(us.RemindCard.Position)
+	keyboard := keyboards.ClosedRemindCardKeyboard
 
 	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)
 	if err != nil {
@@ -31,7 +31,7 @@ func (b *Bot) GetRemindCardCommand(us *model.UserState, chatID int64) {
 		return
 	}
 
-	us.RemindCard.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboardType)
+	us.RemindCard.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboard)
 
 	us.DictionaryPage = nil
 	if err := b.uc.UserStateUC.Save(us); err != nil {
@@ -40,16 +40,23 @@ func (b *Bot) GetRemindCardCommand(us *model.UserState, chatID int64) {
 	}
 }
 
-func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, navigation Navigation) {
-	if navigation == Next {
-		us.RemindCard.CurrentCard++
-	} else {
-		us.RemindCard.CurrentCard--
+func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, rememberStatus RememerStatus) {
+	// Если предыдущая карточка была последней - показываем сообщение о завершении тренировки
+	if us.RemindCard.Position == model.Last {
+		keyboard := keyboards.RemindSessionIsOverKeyboard
+		cardMsg := b.msg.Info.RemindSessionIsOver
+		b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
+		return
 	}
 
+	// change memorizationLevel
+
+	logrus.Info(us.RemindCard)
+
+	us.RemindCard.CurrentCard++
 	us.RemindCard.DeterminePosition()
 	us.Mode = model.RemidMode
-	keyboard := keyboards.ChooseClosedRemindCardKeyboard(us.RemindCard.Position)
+	keyboard := keyboards.ClosedRemindCardKeyboard
 
 	us.DictionaryPage = nil
 	if err := b.uc.UserStateUC.Save(us); err != nil {
@@ -72,7 +79,7 @@ func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, navigation
 func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
 	us.RemindCard.DeterminePosition()
 	us.Mode = model.RemidMode
-	keyboard := keyboards.ChooseOpenedRemindCardKeyboard(us.RemindCard.Position)
+	keyboard := keyboards.OpenedRemindCardKeyboard
 
 	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*us.RemindCard)
 	if err != nil {
@@ -82,4 +89,26 @@ func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
 		return
 	}
 	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
+}
+
+func (b *Bot) GetAnotherRemindSession(us *model.UserState, chatID int64) {
+	us.Mode = model.RemidMode
+	us.RemindCard.CurrentCard = 1
+	keyboard := keyboards.ClosedRemindCardKeyboard
+
+	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)
+	if err != nil {
+		logrus.Error(err)
+		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+		b.sendMessage(chatID, errMsgText)
+		return
+	}
+
+	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
+
+	us.DictionaryPage = nil
+	if err := b.uc.UserStateUC.Save(us); err != nil {
+		logrus.Error(err)
+		return
+	}
 }
