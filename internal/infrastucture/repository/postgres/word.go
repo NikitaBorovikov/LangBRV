@@ -70,7 +70,7 @@ func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, er
 func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 	var remindWords []model.Word
 
-	query := `SELECT original, translation, memorization_level FROM words
+	query := `SELECT word_id, original, translation, last_seen, next_remind, memorization_level FROM words
 	WHERE user_id = $1 AND CURRENT_DATE >= next_remind::date`
 
 	err := r.db.Select(&remindWords, query, userID)
@@ -81,8 +81,8 @@ func (r *WordRepo) GetRemindList(userID int64) ([]model.Word, error) {
 }
 
 func (r *WordRepo) Update(word *model.Word) error {
-	query := `UPDATE words SET last_seen = $1 WHERE word_id = $2`
-	_, err := r.db.Exec(query, word.LastSeen, word.ID)
+	query := `UPDATE words SET last_seen = $1, next_remind = $2, memorization_level = $3 WHERE word_id = $4`
+	_, err := r.db.Exec(query, word.LastSeen, word.NextRemind, word.MemorizationLevel, word.ID)
 	return err
 }
 
