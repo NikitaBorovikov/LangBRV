@@ -2,6 +2,10 @@ package model
 
 import "time"
 
+const (
+	DefaultMemorizationLevel = 1
+)
+
 type Word struct {
 	ID                string    `db:"word_id"`
 	UserID            int64     `db:"user_id"`

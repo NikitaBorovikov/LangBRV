@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (b *Bot) GetRemindCardCommand(us *model.UserState, chatID int64) {
+func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 	remindList, err := b.uc.WordUC.GetRemindList(us.UserID)
 	if err != nil {
 		logrus.Error(err)
@@ -40,7 +40,7 @@ func (b *Bot) GetRemindCardCommand(us *model.UserState, chatID int64) {
 	}
 }
 
-func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, isRememberWell bool) {
+func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWell bool) {
 	// меняем memorizationLevel и newRemind для предыдущей карточки
 	word := us.RemindCard.Words[us.RemindCard.CurrentCard-1]
 	if err := b.uc.WordUC.Update(&word, isRememberWell); err != nil {
@@ -55,6 +55,7 @@ func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, isRemember
 		return
 	}
 
+	// Переходим к следущей карточке
 	us.RemindCard.CurrentCard++
 	us.RemindCard.DeterminePosition()
 	us.Mode = model.RemidMode
@@ -93,9 +94,9 @@ func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
 	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
 }
 
-func (b *Bot) GetAnotherRemindSession(us *model.UserState, chatID int64) {
+func (b *Bot) RepeatRemindSession(us *model.UserState, chatID int64) {
 	us.Mode = model.RemidMode
-	us.RemindCard.CurrentCard = 1
+	us.RemindCard.CurrentCard = model.DefaultCardNumber
 	keyboard := keyboards.ClosedRemindCardKeyboard
 
 	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)

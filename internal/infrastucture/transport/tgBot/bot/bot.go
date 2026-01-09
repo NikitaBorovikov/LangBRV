@@ -125,7 +125,7 @@ func (b *Bot) handleCommands(update *tgbotapi.Message) {
 		b.GetDictionaryCommand(userState, chatID)
 
 	case RemindCommand:
-		b.GetRemindCardCommand(userState, chatID)
+		b.StartRemindSession(userState, chatID)
 
 	case DeleteWordCommand:
 		b.DeleteWordCommand(userState, chatID)
@@ -185,10 +185,10 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 		b.ShowRemindCard(userState, chatID)
 
 	case RememberWellCallback:
-		b.GetAnotherRemindCard(userState, chatID, true)
+		b.GetNextRemindCard(userState, chatID, true)
 
 	case RememberBadlyCallback:
-		b.GetAnotherRemindCard(userState, chatID, false)
+		b.GetNextRemindCard(userState, chatID, false)
 
 	case AddWordCallback:
 		b.AddWord(userState, chatID)
@@ -197,7 +197,7 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 		b.GetDictionaryCB(userState, chatID)
 
 	case RemindSessionCallback:
-		b.GetAnotherRemindSession(userState, chatID)
+		b.RepeatRemindSession(userState, chatID)
 
 	default:
 		msgText := b.msg.Errors.Unknown
