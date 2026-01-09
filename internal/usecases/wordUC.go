@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+// ключ - текущий уровень значение - через сколько дней следующее повторение
+var nextRepIn = map[uint8]uint8{
+	1: 0,
+	2: 1,
+	3: 2,
+	4: 4,
+	5: 7,
+	6: 14,
+	7: 69,
+}
+
 type WordUC struct {
 	WordRepo repository.WordRepo
 }
@@ -41,6 +52,21 @@ func (uc *WordUC) Add(word *model.Word) error {
 	word.NextRemind = time.Now().UTC()
 	word.MemorizationLevel = 1
 	if err := uc.WordRepo.Add(word); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uc *WordUC) Update(word *model.Word, isRememberWell bool) error {
+	if isRememberWell {
+		word.NextRemind = time.Now().UTC().Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
+		word.MemorizationLevel += 1
+	} else {
+		word.NextRemind = time.Now().UTC().Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
+		word.MemorizationLevel = 2
+	}
+
+	if err := uc.WordRepo.Update(word); err != nil {
 		return err
 	}
 	return nil

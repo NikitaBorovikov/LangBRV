@@ -40,18 +40,20 @@ func (b *Bot) GetRemindCardCommand(us *model.UserState, chatID int64) {
 	}
 }
 
-func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, rememberStatus RememerStatus) {
-	// Если предыдущая карточка была последней - показываем сообщение о завершении тренировки
-	if us.RemindCard.Position == model.Last {
+func (b *Bot) GetAnotherRemindCard(us *model.UserState, chatID int64, isRememberWell bool) {
+	// меняем memorizationLevel и newRemind для предыдущей карточки
+	word := us.RemindCard.Words[us.RemindCard.CurrentCard-1]
+	if err := b.uc.WordUC.Update(&word, isRememberWell); err != nil {
+		logrus.Errorf("failed to update word: %v", err)
+	}
+
+	// Если предыдущая карточка была последней или единственной - показываем сообщение о завершении тренировки
+	if us.RemindCard.Position == model.Last || us.RemindCard.Position == model.Single {
 		keyboard := keyboards.RemindSessionIsOverKeyboard
 		cardMsg := b.msg.Info.RemindSessionIsOver
 		b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
 		return
 	}
-
-	// change memorizationLevel
-
-	logrus.Info(us.RemindCard)
 
 	us.RemindCard.CurrentCard++
 	us.RemindCard.DeterminePosition()

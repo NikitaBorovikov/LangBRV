@@ -12,14 +12,10 @@ import (
 )
 
 type Navigation string
-type RememerStatus string
 
 const (
 	Next     Navigation = "NEXT"
 	Previous Navigation = "PREVIOUS"
-
-	RememberWell  RememerStatus = "well"
-	RememberBadly RememerStatus = "badly"
 )
 
 const (
@@ -189,10 +185,10 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 		b.ShowRemindCard(userState, chatID)
 
 	case RememberWellCallback:
-		b.GetAnotherRemindCard(userState, chatID, RememberWell)
+		b.GetAnotherRemindCard(userState, chatID, true)
 
 	case RememberBadlyCallback:
-		b.GetAnotherRemindCard(userState, chatID, RememberBadly)
+		b.GetAnotherRemindCard(userState, chatID, false)
 
 	case AddWordCallback:
 		b.AddWord(userState, chatID)
