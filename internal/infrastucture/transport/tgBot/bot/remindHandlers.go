@@ -4,6 +4,7 @@ import (
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -44,8 +45,14 @@ func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWel
 	// меняем memorizationLevel и newRemind для предыдущей карточки
 	previousCardIdx := us.RemindSession.CurrentCard - 1
 	word := us.RemindSession.Words[previousCardIdx]
-	if err := b.uc.WordUC.Update(&word, isRememberWell); err != nil {
-		logrus.Errorf("failed to update word: %v", err)
+
+	// предотварщаем обновление данных о слове при повторной тренировке
+	lastSeenDay := us.RemindSession.Words[previousCardIdx].LastSeen.Day()
+	today := time.Now().UTC().Day()
+	if lastSeenDay != today {
+		if err := b.uc.WordUC.Update(&word, isRememberWell); err != nil {
+			logrus.Errorf("failed to update word: %v", err)
+		}
 	}
 
 	// Если предыдущая карточка была последней или единственной - показываем сообщение о завершении тренировки
