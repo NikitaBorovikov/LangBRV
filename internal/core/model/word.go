@@ -3,7 +3,8 @@ package model
 import "time"
 
 const (
-	DefaultMemorizationLevel = 1
+	DefaultMemorizationLevel     = 1
+	DefaultMemorizationLevelStep = 1
 )
 
 type Word struct {

@@ -28,7 +28,7 @@ func (b *Bot) GetDictionaryCommand(us *model.UserState, chatID int64) {
 	keyboard := keyboards.ChooseDictionaryKeyboard(page.Position)
 
 	us.DictionaryPage = page
-	us.RemindCard = nil
+	us.RemindSession = nil
 	us.Mode = model.ViewDictionaryMode
 
 	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(us.UserID, page)
@@ -68,7 +68,7 @@ func (b *Bot) GetDictionaryCB(us *model.UserState, chatID int64) {
 	keyboard := keyboards.ChooseDictionaryKeyboard(page.Position)
 
 	us.DictionaryPage = page
-	us.RemindCard = nil
+	us.RemindSession = nil
 	us.Mode = model.ViewDictionaryMode
 
 	if err := b.uc.UserStateUC.Save(us); err != nil {
@@ -98,7 +98,7 @@ func (b *Bot) GetAnotherDictionaryPage(us *model.UserState, chatID int64, naviga
 	us.DictionaryPage.DeterminePosition()
 	keyboard := keyboards.ChooseDictionaryKeyboard(us.DictionaryPage.Position)
 
-	us.RemindCard = nil
+	us.RemindSession = nil
 	us.Mode = model.ViewDictionaryMode
 	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)

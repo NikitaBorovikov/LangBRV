@@ -17,13 +17,13 @@ func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 		return
 	}
 
-	us.RemindCard = model.NewRemindCard(remindList)
-	us.RemindCard.DeterminePosition()
-	us.Mode = model.RemidMode
+	us.RemindSession = model.NewRemindSession(remindList)
+	us.RemindSession.DeterminePosition()
+	us.Mode = model.RemindMode
 
 	keyboard := keyboards.ClosedRemindCardKeyboard
 
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)
+	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -31,7 +31,7 @@ func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 		return
 	}
 
-	us.RemindCard.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboard)
+	us.RemindSession.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboard)
 
 	us.DictionaryPage = nil
 	if err := b.uc.UserStateUC.Save(us); err != nil {
@@ -42,23 +42,24 @@ func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 
 func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWell bool) {
 	// меняем memorizationLevel и newRemind для предыдущей карточки
-	word := us.RemindCard.Words[us.RemindCard.CurrentCard-1]
+	previousCardIdx := us.RemindSession.CurrentCard - 1
+	word := us.RemindSession.Words[previousCardIdx]
 	if err := b.uc.WordUC.Update(&word, isRememberWell); err != nil {
 		logrus.Errorf("failed to update word: %v", err)
 	}
 
 	// Если предыдущая карточка была последней или единственной - показываем сообщение о завершении тренировки
-	if us.RemindCard.Position == model.Last || us.RemindCard.Position == model.Single {
+	if us.RemindSession.Position == model.Last || us.RemindSession.Position == model.Single {
 		keyboard := keyboards.RemindSessionIsOverKeyboard
 		cardMsg := b.msg.Info.RemindSessionIsOver
-		b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
+		b.updateMessage(chatID, us.RemindSession.MessageID, cardMsg, keyboard)
 		return
 	}
 
 	// Переходим к следущей карточке
-	us.RemindCard.CurrentCard++
-	us.RemindCard.DeterminePosition()
-	us.Mode = model.RemidMode
+	us.RemindSession.CurrentCard++
+	us.RemindSession.DeterminePosition()
+	us.Mode = model.RemindMode
 	keyboard := keyboards.ClosedRemindCardKeyboard
 
 	us.DictionaryPage = nil
@@ -69,37 +70,37 @@ func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWel
 		return
 	}
 
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)
+	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindSession.MessageID, cardMsg, keyboard)
 }
 
 func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
-	us.RemindCard.DeterminePosition()
-	us.Mode = model.RemidMode
+	us.RemindSession.DeterminePosition()
+	us.Mode = model.RemindMode
 	keyboard := keyboards.OpenedRemindCardKeyboard
 
-	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*us.RemindCard)
+	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*us.RemindSession)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
-	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindSession.MessageID, cardMsg, keyboard)
 }
 
 func (b *Bot) RepeatRemindSession(us *model.UserState, chatID int64) {
-	us.Mode = model.RemidMode
-	us.RemindCard.CurrentCard = model.DefaultCardNumber
+	us.Mode = model.RemindMode
+	us.RemindSession.CurrentCard = model.DefaultCardNumber
 	keyboard := keyboards.ClosedRemindCardKeyboard
 
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindCard)
+	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
 	if err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -107,7 +108,7 @@ func (b *Bot) RepeatRemindSession(us *model.UserState, chatID int64) {
 		return
 	}
 
-	b.updateMessage(chatID, us.RemindCard.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindSession.MessageID, cardMsg, keyboard)
 
 	us.DictionaryPage = nil
 	if err := b.uc.UserStateUC.Save(us); err != nil {
