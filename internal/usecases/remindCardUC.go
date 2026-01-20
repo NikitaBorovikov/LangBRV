@@ -18,7 +18,7 @@ func NewRemindCardUC(wr repository.WordRepo) *RemindCardUC {
 	}
 }
 
-func (uc *RemindCardUC) FormatClosedRemindCard(remindCards model.RemindCard) (string, error) {
+func (uc *RemindCardUC) FormatClosedRemindCard(remindCards model.RemindSession) (string, error) {
 	if len(remindCards.Words) == 0 {
 		return "", apperrors.ErrNoWordsToRemind
 	}
@@ -32,7 +32,7 @@ func (uc *RemindCardUC) FormatClosedRemindCard(remindCards model.RemindCard) (st
 	return sb.String(), nil
 }
 
-func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindCard) (string, error) {
+func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindSession) (string, error) {
 	if len(remindCards.Words) == 0 {
 		return "", apperrors.ErrNoWordsToRemind
 	}
