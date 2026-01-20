@@ -29,10 +29,12 @@ const (
 	PreviousPageCallback  = "previousPage"
 	AddWordCallback       = "addWord"
 	GetDictionaryCallback = "getDictionary"
+	RemindSessionCallback = "newRemindSession"
 
-	NextCardCallabck     = "nextCard"
-	PreviousCardCallback = "previousCard"
-	ShowWordCallback     = "showWord"
+	RememberWellCallback  = "rememberWell"
+	RememberBadlyCallback = "rememberBadly"
+
+	ShowWordCallback = "showWord"
 )
 
 type Bot struct {
@@ -123,7 +125,7 @@ func (b *Bot) handleCommands(update *tgbotapi.Message) {
 		b.GetDictionaryCommand(userState, chatID)
 
 	case RemindCommand:
-		b.GetRemindCardCommand(userState, chatID)
+		b.StartRemindSession(userState, chatID)
 
 	case DeleteWordCommand:
 		b.DeleteWordCommand(userState, chatID)
@@ -182,17 +184,20 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	case ShowWordCallback:
 		b.ShowRemindCard(userState, chatID)
 
-	case NextCardCallabck:
-		b.GetAnotherRemindCard(userState, chatID, Next)
+	case RememberWellCallback:
+		b.GetNextRemindCard(userState, chatID, true)
 
-	case PreviousCardCallback:
-		b.GetAnotherRemindCard(userState, chatID, Previous)
+	case RememberBadlyCallback:
+		b.GetNextRemindCard(userState, chatID, false)
 
 	case AddWordCallback:
 		b.AddWord(userState, chatID)
 
 	case GetDictionaryCallback:
 		b.GetDictionaryCB(userState, chatID)
+
+	case RemindSessionCallback:
+		b.RepeatRemindSession(userState, chatID)
 
 	default:
 		msgText := b.msg.Errors.Unknown

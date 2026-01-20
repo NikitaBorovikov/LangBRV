@@ -7,17 +7,17 @@ import (
 )
 
 type RemindCardRepo struct {
-	card map[int64]*model.RemindCard
+	card map[int64]*model.RemindSession
 	mu   sync.RWMutex
 }
 
 func NewRemindCardRepo() *RemindCardRepo {
 	return &RemindCardRepo{
-		card: make(map[int64]*model.RemindCard, DefaultInMemorySize),
+		card: make(map[int64]*model.RemindSession, DefaultInMemorySize),
 	}
 }
 
-func (r *RemindCardRepo) Save(page *model.RemindCard) error {
+func (r *RemindCardRepo) Save(page *model.RemindSession) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -25,7 +25,7 @@ func (r *RemindCardRepo) Save(page *model.RemindCard) error {
 	return nil
 }
 
-func (r *RemindCardRepo) Get(userID int64) (*model.RemindCard, error) {
+func (r *RemindCardRepo) Get(userID int64) (*model.RemindSession, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

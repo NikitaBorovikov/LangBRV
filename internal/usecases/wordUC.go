@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+// ключ - текущий уровень. значение - через сколько дней следующее повторение
+var nextRepIn = map[uint8]uint8{
+	1: 1,
+	2: 2,
+	3: 4,
+	4: 6,
+	5: 8,
+	6: 10,
+	7: 59,
+}
+
 type WordUC struct {
 	WordRepo repository.WordRepo
 }
@@ -27,16 +38,33 @@ func (uc *WordUC) Add(word *model.Word) error {
 		return err
 	}
 
-	// Если слово уже есть, то просто обновляем его с новым LastSeen полем
+	// Если слово уже есть, то просто обновляем его поля
 	if existingWord != nil {
-		existingWord.LastSeen = time.Now().UTC()
+		setDefaultWordFields(existingWord)
 		err := uc.WordRepo.Update(existingWord)
 		return err
 	}
+
 	// Если слова нет, то добавляем его
+	setDefaultWordFields(word)
 	word.CreatedAt = time.Now().UTC()
-	word.LastSeen = time.Now().UTC()
+
 	if err := uc.WordRepo.Add(word); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uc *WordUC) Update(word *model.Word, isRememberWell bool) error {
+	if isRememberWell {
+		word.NextRemind = time.Now().UTC().Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
+		word.MemorizationLevel += model.DefaultMemorizationLevelStep
+	} else {
+		word.NextRemind = time.Now().UTC().Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
+		word.MemorizationLevel = model.DefaultMemorizationLevel
+	}
+
+	if err := uc.WordRepo.Update(word); err != nil {
 		return err
 	}
 	return nil
@@ -75,4 +103,11 @@ func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {
 		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)
 	}
 	return sb.String(), nil
+}
+
+func setDefaultWordFields(word *model.Word) {
+	now := time.Now().UTC()
+	word.LastSeen = now
+	word.MemorizationLevel = model.DefaultMemorizationLevel
+	word.NextRemind = now.Add(time.Duration(model.DefaultMemorizationLevel * 24 * time.Hour))
 }

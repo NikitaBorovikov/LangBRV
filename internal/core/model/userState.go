@@ -7,7 +7,7 @@ const (
 	DeleteMode         Mode = "DELETE"
 	AddMode            Mode = "ADD"
 	ViewDictionaryMode Mode = "VIEW_DICTIONARY"
-	RemidMode          Mode = "REMIND"
+	RemindMode         Mode = "REMIND"
 
 	Single Position = "SINGLE"
 	First  Position = "FIRST"
@@ -22,7 +22,7 @@ type UserState struct {
 	UserID         int64
 	Mode           Mode
 	DictionaryPage *DictionaryPage
-	RemindCard     *RemindCard
+	RemindSession  *RemindSession
 	LastMessageID  int
 }
 
@@ -34,7 +34,7 @@ type DictionaryPage struct {
 	Words       []Word
 }
 
-type RemindCard struct {
+type RemindSession struct {
 	UserID      int64
 	CurrentCard int
 	TotalCards  int
@@ -56,8 +56,8 @@ func NewDictionaryPage() *DictionaryPage {
 	}
 }
 
-func NewRemindCard(words []Word) *RemindCard {
-	return &RemindCard{
+func NewRemindSession(words []Word) *RemindSession {
+	return &RemindSession{
 		CurrentCard: DefaultCardNumber,
 		TotalCards:  len(words),
 		Words:       words,
@@ -77,7 +77,7 @@ func (p *DictionaryPage) DeterminePosition() {
 	}
 }
 
-func (c *RemindCard) DeterminePosition() {
+func (c *RemindSession) DeterminePosition() {
 	switch {
 	case c.CurrentCard == 1 && c.TotalCards == 1:
 		c.Position = Single

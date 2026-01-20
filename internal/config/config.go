@@ -35,9 +35,10 @@ type Messages struct {
 }
 
 type Info struct {
-	Start   string `yaml:"start"`
-	AddWord string `yaml:"add_word"`
-	DelWord string `yaml:"del_word"`
+	Start               string `yaml:"start"`
+	AddWord             string `yaml:"add_word"`
+	DelWord             string `yaml:"del_word"`
+	RemindSessionIsOver string `yaml:"remind_session_is_over"`
 }
 
 type Success struct {

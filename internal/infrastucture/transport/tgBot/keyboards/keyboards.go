@@ -43,31 +43,9 @@ var LastDictionaryPageKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-var FirstClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var ClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
 		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
-	),
-)
-
-var MiddleClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
-		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
-	),
-)
-
-var LastClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Показать перевод", "showWord"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
 	),
 )
 
@@ -77,22 +55,16 @@ var SingleClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-var FirstOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var OpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
+		tgbotapi.NewInlineKeyboardButtonData("👎", "rememberBadly"),
+		tgbotapi.NewInlineKeyboardButtonData("👍", "rememberWell"),
 	),
 )
 
-var MiddleOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+var RemindSessionIsOverKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
-		tgbotapi.NewInlineKeyboardButtonData("➡️", "nextCard"),
-	),
-)
-
-var LastOpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("⬅️", "previousCard"),
+		tgbotapi.NewInlineKeyboardButtonData("Тренировать еще раз", "newRemindSession"),
 	),
 )
 
@@ -106,31 +78,5 @@ func ChooseDictionaryKeyboard(pageStatus model.Position) interface{} {
 		return nil
 	default:
 		return MiddleDictionaryPageKeyboard
-	}
-}
-
-func ChooseClosedRemindCardKeyboard(cardStatus model.Position) interface{} {
-	switch cardStatus {
-	case model.First:
-		return FirstClosedRemindCardKeyboard
-	case model.Last:
-		return LastClosedRemindCardKeyboard
-	case model.Single:
-		return SingleClosedRemindCardKeyboard
-	default:
-		return MiddleClosedRemindCardKeyboard
-	}
-}
-
-func ChooseOpenedRemindCardKeyboard(cardStatus model.Position) interface{} {
-	switch cardStatus {
-	case model.First:
-		return FirstOpenedRemindCardKeyboard
-	case model.Last:
-		return LastOpenedRemindCardKeyboard
-	case model.Single:
-		return nil
-	default:
-		return MiddleOpenedRemindCardKeyboard
 	}
 }
