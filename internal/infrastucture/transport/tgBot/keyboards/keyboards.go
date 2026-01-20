@@ -57,10 +57,8 @@ var SingleClosedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var OpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Хорошо помню", "rememberWell"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Плохо помню", "rememberBadly"),
+		tgbotapi.NewInlineKeyboardButtonData("👎", "rememberBadly"),
+		tgbotapi.NewInlineKeyboardButtonData("👍", "rememberWell"),
 	),
 )
 
