@@ -4,23 +4,18 @@ type Mode string
 type Position string
 
 const (
-	DeleteMode         Mode = "DELETE"
-	AddMode            Mode = "ADD"
-	ViewDictionaryMode Mode = "VIEW_DICTIONARY"
-	RemindMode         Mode = "REMIND"
-
 	Single Position = "SINGLE"
 	First  Position = "FIRST"
 	Middle Position = "MIDDLE"
 	Last   Position = "LAST"
 
-	DefaultPageNumber = 1
-	DefaultCardNumber = 1
+	DefaultPageNumber       = 1
+	DefaultRemindCardNumber = 1
 )
 
 type UserState struct {
 	UserID         int64
-	Mode           Mode
+	IsDeleteMode   bool
 	DictionaryPage *DictionaryPage
 	RemindSession  *RemindSession
 	LastMessageID  int
@@ -43,10 +38,10 @@ type RemindSession struct {
 	Words       []Word
 }
 
-func NewUserState(userID int64, mode Mode) *UserState {
+func NewUserState(userID int64) *UserState {
 	return &UserState{
-		UserID: userID,
-		Mode:   mode,
+		UserID:       userID,
+		IsDeleteMode: false,
 	}
 }
 
@@ -58,7 +53,7 @@ func NewDictionaryPage() *DictionaryPage {
 
 func NewRemindSession(words []Word) *RemindSession {
 	return &RemindSession{
-		CurrentCard: DefaultCardNumber,
+		CurrentCard: DefaultRemindCardNumber,
 		TotalCards:  len(words),
 		Words:       words,
 	}

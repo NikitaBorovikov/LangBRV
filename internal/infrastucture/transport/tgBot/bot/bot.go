@@ -104,7 +104,7 @@ func (b *Bot) handleCommands(update *tgbotapi.Message) {
 
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
-		userState = model.NewUserState(userID, model.AddMode)
+		userState = model.NewUserState(userID)
 		if err := b.uc.UserStateUC.Save(userState); err != nil {
 			logrus.Error(err)
 			errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -143,7 +143,7 @@ func (b *Bot) handleMessages(update *tgbotapi.Message) {
 
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
-		userState = model.NewUserState(userID, model.AddMode)
+		userState = model.NewUserState(userID)
 		if err := b.uc.UserStateUC.Save(userState); err != nil {
 			logrus.Error(err)
 			errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -152,7 +152,7 @@ func (b *Bot) handleMessages(update *tgbotapi.Message) {
 		}
 	}
 
-	if userState.Mode != model.DeleteMode {
+	if !userState.IsDeleteMode {
 		b.SaveWord(userState, chatID, text)
 	} else {
 		b.DeleteWord(userState, chatID, text)
@@ -165,7 +165,7 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 
 	userState, err := b.uc.UserStateUC.Get(userID)
 	if err != nil || userState == nil {
-		userState = model.NewUserState(userID, model.AddMode)
+		userState = model.NewUserState(userID)
 		if err := b.uc.UserStateUC.Save(userState); err != nil {
 			logrus.Error(err)
 			errMsgText := apperrors.HandleError(err, &b.msg.Errors)

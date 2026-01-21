@@ -11,13 +11,13 @@ import (
 )
 
 func (b *Bot) AddWord(us *model.UserState, chatID int64) {
-	us.Mode = model.AddMode
+	us.IsDeleteMode = false
 	msgText := b.msg.Info.AddWord
 	b.sendMessage(chatID, msgText)
 }
 
 func (b *Bot) DeleteWordCommand(us *model.UserState, chatID int64) {
-	us.Mode = model.DeleteMode
+	us.IsDeleteMode = true
 	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
@@ -52,7 +52,7 @@ func (b *Bot) SaveWord(us *model.UserState, chatID int64, text string) {
 
 func (b *Bot) DeleteWord(us *model.UserState, chatID int64, text string) {
 	defer func() {
-		us.Mode = model.AddMode // Выключаем режим удаления
+		us.IsDeleteMode = false // Выключаем режим удаления
 	}()
 
 	amountOfDeletedWords, err := b.uc.WordUC.Delete(us.UserID, text)
