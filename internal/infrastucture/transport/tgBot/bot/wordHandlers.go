@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
@@ -54,13 +55,16 @@ func (b *Bot) DeleteWord(us *model.UserState, chatID int64, text string) {
 		us.Mode = model.AddMode // Выключаем режим удаления
 	}()
 
-	if err := b.uc.WordUC.Delete(us.UserID, text); err != nil {
+	amountOfDeletedWords, err := b.uc.WordUC.Delete(us.UserID, text)
+	if err != nil || amountOfDeletedWords == 0 {
 		logrus.Error(err)
 		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
 		b.sendMessage(chatID, errMsgText)
 		return
 	}
+
 	msgText := b.msg.Success.WordDeleted
+	msgText += fmt.Sprintf("%d", amountOfDeletedWords)
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
 	us.LastMessageID = msgID
 }

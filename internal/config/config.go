@@ -47,14 +47,15 @@ type Success struct {
 }
 
 type Errors struct {
-	Unknown         string `yaml:"unknown"`
-	UnknownCommand  string `yaml:"unknown_command"`
-	UnknownMsg      string `yaml:"unknown_msg"`
-	NoWords         string `yaml:"no_words"`
-	NoWordsToRemind string `yaml:"no_words_to_remind"`
-	WordNotExists   string `yaml:"word_not_exists"`
-	WordTooLong     string `yaml:"word_too_long"`
-	IncorrectFormat string `yaml:"incorrect_fomat"`
+	Unknown                  string `yaml:"unknown"`
+	UnknownCommand           string `yaml:"unknown_command"`
+	UnknownMsg               string `yaml:"unknown_msg"`
+	NoWords                  string `yaml:"no_words"`
+	NoWordsToRemind          string `yaml:"no_words_to_remind"`
+	WordNotExists            string `yaml:"word_not_exists"`
+	WordTooLong              string `yaml:"word_too_long"`
+	IncorrectDeleteMsgFormat string `yaml:"incorrect_delete_msg_fomat"`
+	IncorrectFormat          string `yaml:"incorrect_fomat"`
 }
 
 func InitConfig() (*Config, error) {
