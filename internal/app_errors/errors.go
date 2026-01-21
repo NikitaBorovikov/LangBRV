@@ -11,8 +11,9 @@ var (
 	ErrWordNotFound        = errors.New("such word is not found")
 
 	//validation error
-	ErrWordTooLong     = errors.New("validation error: word is too long")
-	ErrIncorrectFormat = errors.New("validation error: incorrect format")
+	ErrWordTooLong              = errors.New("validation error: word is too long")
+	ErrIncorrectFormat          = errors.New("validation error: incorrect format")
+	ErrIncorrectDeleteMsgFormat = errors.New("validation error: incorrect delete message format")
 )
 
 func HandleError(err error, msg *config.Errors) string {
@@ -27,6 +28,8 @@ func HandleError(err error, msg *config.Errors) string {
 		return msg.WordTooLong
 	case ErrIncorrectFormat:
 		return msg.IncorrectFormat
+	case ErrIncorrectDeleteMsgFormat:
+		return msg.IncorrectDeleteMsgFormat
 	default:
 		return msg.Unknown
 	}

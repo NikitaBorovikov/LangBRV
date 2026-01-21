@@ -8,6 +8,12 @@ import (
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
+)
+
+const (
+	DeleteWordsSeparator = ","
 )
 
 // ключ - текущий уровень. значение - через сколько дней следующее повторение
@@ -70,16 +76,29 @@ func (uc *WordUC) Update(word *model.Word, isRememberWell bool) error {
 	return nil
 }
 
-func (uc *WordUC) Delete(userID int64, word string) error {
-	if err := dto.ValidateWord(word); err != nil {
-		return err
+func (uc *WordUC) Delete(userID int64, words string) (int, error) {
+	wordsArr := strings.Split(words, DeleteWordsSeparator)
+
+	if len(wordsArr) == 0 || len(wordsArr) >= 25 {
+		return 0, apperrors.ErrIncorrectDeleteMsgFormat
 	}
 
-	word = strings.ToLower(word)
-	if err := uc.WordRepo.Delete(userID, word); err != nil {
-		return err
+	var successfulDeletionsCounter int
+	for _, word := range wordsArr {
+		if err := dto.ValidateWord(word); err != nil {
+			logrus.Errorf("validation word error: %v", err)
+			continue
+		}
+
+		word = strings.TrimSpace(strings.ToLower(word))
+
+		if err := uc.WordRepo.Delete(userID, word); err != nil {
+			logrus.Errorf("failed to delete word: %v", err)
+			continue
+		}
+		successfulDeletionsCounter++
 	}
-	return nil
+	return successfulDeletionsCounter, nil
 }
 
 func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {

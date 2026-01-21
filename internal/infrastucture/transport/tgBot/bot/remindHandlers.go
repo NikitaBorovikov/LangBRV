@@ -20,7 +20,6 @@ func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 
 	us.RemindSession = model.NewRemindSession(remindList)
 	us.RemindSession.DeterminePosition()
-	us.Mode = model.RemindMode
 
 	keyboard := keyboards.ClosedRemindCardKeyboard
 
@@ -66,7 +65,6 @@ func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWel
 	// Переходим к следущей карточке
 	us.RemindSession.CurrentCard++
 	us.RemindSession.DeterminePosition()
-	us.Mode = model.RemindMode
 	keyboard := keyboards.ClosedRemindCardKeyboard
 
 	us.DictionaryPage = nil
@@ -89,7 +87,6 @@ func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWel
 
 func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
 	us.RemindSession.DeterminePosition()
-	us.Mode = model.RemindMode
 	keyboard := keyboards.OpenedRemindCardKeyboard
 
 	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*us.RemindSession)
@@ -103,8 +100,7 @@ func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
 }
 
 func (b *Bot) RepeatRemindSession(us *model.UserState, chatID int64) {
-	us.Mode = model.RemindMode
-	us.RemindSession.CurrentCard = model.DefaultCardNumber
+	us.RemindSession.CurrentCard = model.DefaultRemindCardNumber
 	keyboard := keyboards.ClosedRemindCardKeyboard
 
 	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
