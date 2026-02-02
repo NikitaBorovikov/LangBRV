@@ -240,3 +240,9 @@ func (b *Bot) updateMessage(chatID int64, msgID int, text string, keyboardType i
 		logrus.Errorf("failed to update message to chat id: %d, err: %v", chatID, err)
 	}
 }
+
+func (b *Bot) handleError(chatID int64, err error) {
+	logrus.Error(err)
+	errMsgText := apperrors.HandleError(err, &b.msg.Errors)
+	b.sendMessage(chatID, errMsgText)
+}

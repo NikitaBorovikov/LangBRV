@@ -2,12 +2,9 @@ package bot
 
 import (
 	"fmt"
-	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/dto"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
-
-	"github.com/sirupsen/logrus"
 )
 
 func (b *Bot) AddWord(us *model.UserState, chatID int64) {
@@ -19,9 +16,7 @@ func (b *Bot) AddWord(us *model.UserState, chatID int64) {
 func (b *Bot) DeleteWordCommand(us *model.UserState, chatID int64) {
 	us.IsDeleteMode = true
 	if err := b.uc.UserStateUC.Save(us); err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
+		b.handleError(chatID, err)
 		return
 	}
 	msgText := b.msg.Info.DelWord
@@ -32,16 +27,12 @@ func (b *Bot) SaveWord(us *model.UserState, chatID int64, text string) {
 	req := dto.NewAddWordRequest(us.UserID, text)
 	word, err := req.ToDomainWord()
 	if err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
+		b.handleError(chatID, err)
 		return
 	}
 
 	if err := b.uc.WordUC.Add(word); err != nil {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
+		b.handleError(chatID, err)
 		return
 	}
 
@@ -57,9 +48,7 @@ func (b *Bot) DeleteWord(us *model.UserState, chatID int64, text string) {
 
 	amountOfDeletedWords, err := b.uc.WordUC.Delete(us.UserID, text)
 	if err != nil || amountOfDeletedWords == 0 {
-		logrus.Error(err)
-		errMsgText := apperrors.HandleError(err, &b.msg.Errors)
-		b.sendMessage(chatID, errMsgText)
+		b.handleError(chatID, err)
 		return
 	}
 

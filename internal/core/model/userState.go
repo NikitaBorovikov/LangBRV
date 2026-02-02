@@ -45,18 +45,23 @@ func NewUserState(userID int64) *UserState {
 	}
 }
 
-func NewDictionaryPage() *DictionaryPage {
-	return &DictionaryPage{
+func NewDictionaryPage(totalPages int64) *DictionaryPage {
+	page := &DictionaryPage{
 		CurrentPage: DefaultPageNumber,
+		TotalPages:  totalPages,
 	}
+	page.DeterminePosition()
+	return page
 }
 
 func NewRemindSession(words []Word) *RemindSession {
-	return &RemindSession{
+	rs := &RemindSession{
 		CurrentCard: DefaultRemindCardNumber,
 		TotalCards:  len(words),
 		Words:       words,
 	}
+	rs.DeterminePosition()
+	return rs
 }
 
 func (p *DictionaryPage) DeterminePosition() {
@@ -72,15 +77,20 @@ func (p *DictionaryPage) DeterminePosition() {
 	}
 }
 
-func (c *RemindSession) DeterminePosition() {
+func (rs *RemindSession) GoToNextCard() {
+	rs.CurrentCard++
+	rs.DeterminePosition()
+}
+
+func (rs *RemindSession) DeterminePosition() {
 	switch {
-	case c.CurrentCard == 1 && c.TotalCards == 1:
-		c.Position = Single
-	case c.CurrentCard == 1 && c.TotalCards > 1:
-		c.Position = First
-	case c.CurrentCard != 1 && c.CurrentCard == c.TotalCards:
-		c.Position = Last
+	case rs.CurrentCard == 1 && rs.TotalCards == 1:
+		rs.Position = Single
+	case rs.CurrentCard == 1 && rs.TotalCards > 1:
+		rs.Position = First
+	case rs.CurrentCard != 1 && rs.CurrentCard == rs.TotalCards:
+		rs.Position = Last
 	default:
-		c.Position = Middle
+		rs.Position = Middle
 	}
 }
