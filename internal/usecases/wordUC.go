@@ -62,13 +62,17 @@ func (uc *WordUC) Add(word *model.Word) error {
 }
 
 func (uc *WordUC) Update(word *model.Word, isRememberWell bool) error {
+	now := time.Now().UTC()
+
 	if isRememberWell {
-		word.NextRemind = time.Now().UTC().Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
+		word.NextRemind = now.Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
 		word.MemorizationLevel += model.DefaultMemorizationLevelStep
 	} else {
-		word.NextRemind = time.Now().UTC().Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
+		word.NextRemind = now.Add(time.Duration(nextRepIn[word.MemorizationLevel]) * 24 * time.Hour)
 		word.MemorizationLevel = model.DefaultMemorizationLevel
 	}
+
+	word.LastSeen = now
 
 	if err := uc.WordRepo.Update(word); err != nil {
 		return err
