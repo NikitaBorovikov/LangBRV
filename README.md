@@ -1,3 +1,4 @@
+![Logo](https://github.com/NikitaBorovikov/LangBRV/blob/master/Logo.png)
 # 📙 LangBRV - your pocket dictionary
 ## Description
 This is a Telegram bot designed to effectively memorize foreign words using the scientifically proven technique of <b>flachcards and spaced repetition</b>. 
