@@ -9,8 +9,9 @@ var (
 	ErrNoWordsInDictionary = errors.New("there are no words in the dictionary")
 	ErrNoWordsToRemind     = errors.New("there are no words to remind")
 	ErrWordNotFound        = errors.New("such word is not found")
+	ErrUserStateNotFound   = errors.New("failed to find state with such userID")
 
-	//validation error
+	// Validation error
 	ErrWordTooLong              = errors.New("validation error: word is too long")
 	ErrIncorrectFormat          = errors.New("validation error: incorrect format")
 	ErrIncorrectDeleteMsgFormat = errors.New("validation error: incorrect delete message format")

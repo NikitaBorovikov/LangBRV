@@ -1,13 +1,16 @@
 package model
 
-type Mode string
 type Position string
+type Navigation string
 
 const (
 	Single Position = "SINGLE"
 	First  Position = "FIRST"
 	Middle Position = "MIDDLE"
 	Last   Position = "LAST"
+
+	Next     Navigation = "NEXT"
+	Previous Navigation = "PREVIOUS"
 
 	DefaultPageNumber       = 1
 	DefaultRemindCardNumber = 1
@@ -45,10 +48,9 @@ func NewUserState(userID int64) *UserState {
 	}
 }
 
-func NewDictionaryPage(totalPages int64) *DictionaryPage {
+func NewDictionaryPage() *DictionaryPage {
 	page := &DictionaryPage{
 		CurrentPage: DefaultPageNumber,
-		TotalPages:  totalPages,
 	}
 	page.DeterminePosition()
 	return page
@@ -60,8 +62,16 @@ func NewRemindSession(words []Word) *RemindSession {
 		TotalCards:  len(words),
 		Words:       words,
 	}
-	rs.DeterminePosition()
 	return rs
+}
+
+func (p *DictionaryPage) ChangeCurrenctPage(navigation Navigation) {
+	if navigation == Next {
+		p.CurrentPage++
+	} else {
+		p.CurrentPage--
+	}
+	p.DeterminePosition()
 }
 
 func (p *DictionaryPage) DeterminePosition() {

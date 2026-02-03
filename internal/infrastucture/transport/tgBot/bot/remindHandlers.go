@@ -17,14 +17,14 @@ func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 
 	us.RemindSession = model.NewRemindSession(remindList)
 
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
+	formattedCard, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
 	if err != nil {
 		b.handleError(chatID, err)
 		return
 	}
 
 	keyboard := keyboards.ClosedRemindCardKeyboard
-	us.RemindSession.MessageID = b.sendMessageWithKeyboard(chatID, cardMsg, keyboard)
+	us.RemindSession.MessageID = b.sendMessageWithKeyboard(chatID, formattedCard, keyboard)
 
 	us.DictionaryPage = nil
 	if err := b.uc.UserStateUC.Save(us); err != nil {
@@ -52,40 +52,40 @@ func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWel
 		return
 	}
 
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
+	formattedCard, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
 	if err != nil {
 		b.handleError(chatID, err)
 		return
 	}
 	keyboard := keyboards.ClosedRemindCardKeyboard
-	b.updateMessage(chatID, us.RemindSession.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindSession.MessageID, formattedCard, keyboard)
 }
 
 func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
 	us.RemindSession.DeterminePosition()
 
-	cardMsg, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*us.RemindSession)
+	formattedCard, err := b.uc.RemindCardUC.FormatOpenedRemindCard(*us.RemindSession)
 	if err != nil {
 		b.handleError(chatID, err)
 		return
 	}
 
 	keyboard := keyboards.OpenedRemindCardKeyboard
-	b.updateMessage(chatID, us.RemindSession.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindSession.MessageID, formattedCard, keyboard)
 }
 
 func (b *Bot) RepeatRemindSession(us *model.UserState, chatID int64) {
 	us.RemindSession.CurrentCard = model.DefaultRemindCardNumber
 	us.RemindSession.DeterminePosition()
 
-	cardMsg, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
+	formattedCard, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
 	if err != nil {
 		b.handleError(chatID, err)
 		return
 	}
 
 	keyboard := keyboards.ClosedRemindCardKeyboard
-	b.updateMessage(chatID, us.RemindSession.MessageID, cardMsg, keyboard)
+	b.updateMessage(chatID, us.RemindSession.MessageID, formattedCard, keyboard)
 
 	us.DictionaryPage = nil
 	if err := b.uc.UserStateUC.Save(us); err != nil {

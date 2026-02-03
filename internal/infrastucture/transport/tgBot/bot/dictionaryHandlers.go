@@ -11,9 +11,9 @@ import (
 
 func (b *Bot) GetDictionaryCommand(us *model.UserState, chatID int64) {
 	us.RemindSession = nil
+	us.DictionaryPage = model.NewDictionaryPage()
 
 	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(us.UserID)
-	us.DictionaryPage = model.NewDictionaryPage(totalPages)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrNoWordsInDictionary) {
 			b.handleNoWordsError(us, chatID)
@@ -22,6 +22,9 @@ func (b *Bot) GetDictionaryCommand(us *model.UserState, chatID int64) {
 		b.handleError(chatID, err)
 		return
 	}
+
+	us.DictionaryPage.TotalPages = totalPages
+	us.DictionaryPage.DeterminePosition()
 
 	formattedPage, err := b.uc.DictionaryPageUC.FormatPage(us.UserID, us.DictionaryPage)
 	if err != nil {
@@ -40,9 +43,9 @@ func (b *Bot) GetDictionaryCommand(us *model.UserState, chatID int64) {
 
 func (b *Bot) GetDictionaryCB(us *model.UserState, chatID int64) {
 	us.RemindSession = nil
+	us.DictionaryPage = model.NewDictionaryPage()
 
 	totalPages, err := b.uc.DictionaryPageUC.GetAmountOfPages(us.UserID)
-	us.DictionaryPage = model.NewDictionaryPage(totalPages)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrNoWordsInDictionary) {
 			b.handleNoWordsError(us, chatID)
@@ -52,6 +55,8 @@ func (b *Bot) GetDictionaryCB(us *model.UserState, chatID int64) {
 		return
 	}
 
+	us.DictionaryPage.TotalPages = totalPages
+	us.DictionaryPage.DeterminePosition()
 	us.DictionaryPage.MessageID = us.LastMessageID
 
 	if err := b.uc.UserStateUC.Save(us); err != nil {
@@ -69,28 +74,23 @@ func (b *Bot) GetDictionaryCB(us *model.UserState, chatID int64) {
 	b.updateMessage(chatID, us.LastMessageID, formattedPage, keyboard)
 }
 
-func (b *Bot) GetAnotherDictionaryPage(us *model.UserState, chatID int64, navigation Navigation) {
-	if navigation == Next {
-		us.DictionaryPage.CurrentPage++
-	} else {
-		us.DictionaryPage.CurrentPage--
-	}
-
-	us.DictionaryPage.DeterminePosition()
-	keyboard := keyboards.ChooseDictionaryKeyboard(us.DictionaryPage.Position)
-
+func (b *Bot) GetAnotherDictionaryPage(us *model.UserState, chatID int64, navigation model.Navigation) {
 	us.RemindSession = nil
+	us.DictionaryPage.ChangeCurrenctPage(navigation)
+
 	if err := b.uc.UserStateUC.Save(us); err != nil {
 		b.handleError(chatID, err)
 		return
 	}
 
-	formatedPage, err := b.uc.DictionaryPageUC.FormatPage(us.UserID, us.DictionaryPage)
+	formattedPage, err := b.uc.DictionaryPageUC.FormatPage(us.UserID, us.DictionaryPage)
 	if err != nil {
 		b.handleError(chatID, err)
 		return
 	}
-	b.updateMessage(chatID, us.DictionaryPage.MessageID, formatedPage, keyboard)
+
+	keyboard := keyboards.ChooseDictionaryKeyboard(us.DictionaryPage.Position)
+	b.updateMessage(chatID, us.DictionaryPage.MessageID, formattedPage, keyboard)
 }
 
 func (b *Bot) handleNoWordsError(us *model.UserState, chatID int64) {

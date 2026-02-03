@@ -43,7 +43,7 @@ func (b *Bot) SaveWord(us *model.UserState, chatID int64, text string) {
 
 func (b *Bot) DeleteWord(us *model.UserState, chatID int64, text string) {
 	defer func() {
-		us.IsDeleteMode = false // Выключаем режим удаления
+		us.IsDeleteMode = false
 	}()
 
 	amountOfDeletedWords, err := b.uc.WordUC.Delete(us.UserID, text)
@@ -52,8 +52,7 @@ func (b *Bot) DeleteWord(us *model.UserState, chatID int64, text string) {
 		return
 	}
 
-	msgText := b.msg.Success.WordDeleted
-	msgText += fmt.Sprintf("%d", amountOfDeletedWords)
+	msgText := b.msg.Success.WordDeleted + fmt.Sprintf("%d", amountOfDeletedWords)
 	msgID := b.sendMessageWithKeyboard(chatID, msgText, keyboards.MainKeyboard)
 	us.LastMessageID = msgID
 }

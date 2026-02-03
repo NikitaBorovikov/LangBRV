@@ -10,7 +10,7 @@ import (
 
 const (
 	wordsPerPage     int64 = 10
-	expectedPageSize int   = 700 // примерный размер одной страницы словаря в байтах
+	expectedPageSize int   = 700 // The approximate size of one dictionary page in bytes
 )
 
 type DictionaryPageUC struct {

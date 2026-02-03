@@ -44,7 +44,7 @@ func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindSession) 
 	fmt.Fprintf(&sb, "🌀 <b>Повторение:</b> <i>%d/%d</i>\n\n", remindCards.CurrentCard, remindCards.TotalCards)
 	fmt.Fprintf(&sb, "<b>%s - %s</b>\n\n", currentWord.Original, currentWord.Translation)
 
-	// На первой карточке показываем инструкцию
+	// The first card shows the instructions.
 	if remindCards.CurrentCard == 1 {
 		fmt.Fprintf(&sb, "<i>👎 - помню плохо. 👍 - помню хорошо.</i>")
 	}

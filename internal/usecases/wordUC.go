@@ -16,7 +16,7 @@ const (
 	DeleteWordsSeparator = ","
 )
 
-// ключ - текущий уровень. значение - через сколько дней следующее повторение
+// key - current level. value - how many days until the next repetition
 var nextRepIn = map[uint8]uint8{
 	1: 1,
 	2: 2,
@@ -38,21 +38,21 @@ func NewWordUC(wr repository.WordRepo) *WordUC {
 }
 
 func (uc *WordUC) Add(word *model.Word) error {
-	// Проверяем, есть ли уже такое слово в словаре
+	// Checking if this word is already in the dictionary.
 	existingWord, err := uc.WordRepo.FindByUserAndWord(word.UserID, word.Original)
 	if err != nil {
 		return err
 	}
 
-	// Если слово уже есть, то просто обновляем его поля
+	setDefaultWordFields(word)
+
+	// If the word already exists, we simply update its fields.
 	if existingWord != nil {
-		setDefaultWordFields(existingWord)
 		err := uc.WordRepo.Update(existingWord)
 		return err
 	}
 
-	// Если слова нет, то добавляем его
-	setDefaultWordFields(word)
+	// If the word is not present, we add it
 	word.CreatedAt = time.Now().UTC()
 
 	if err := uc.WordRepo.Add(word); err != nil {
@@ -103,10 +103,7 @@ func (uc *WordUC) Delete(userID int64, words string) (int, error) {
 
 func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {
 	remindList, err := uc.WordRepo.GetRemindList(userID)
-	if err != nil {
-		return nil, err
-	}
-	return remindList, nil
+	return remindList, err
 }
 
 func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {

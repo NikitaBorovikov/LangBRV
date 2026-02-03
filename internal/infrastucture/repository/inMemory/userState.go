@@ -1,7 +1,7 @@
 package inmemory
 
 import (
-	"fmt"
+	apperrors "langbrv/internal/app_errors"
 	"langbrv/internal/core/model"
 	"sync"
 )
@@ -35,7 +35,7 @@ func (r *UserStateRepo) Get(userID int64) (*model.UserState, error) {
 
 	state := r.states[userID]
 	if state == nil {
-		return nil, fmt.Errorf("failed to find state with such userID")
+		return nil, apperrors.ErrUserStateNotFound
 	}
 	return state, nil
 }

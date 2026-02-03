@@ -11,13 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Navigation string
-
-const (
-	Next     Navigation = "NEXT"
-	Previous Navigation = "PREVIOUS"
-)
-
 const (
 	StartCommand         = "start"
 	AddWordCommand       = "add"
@@ -176,10 +169,10 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 
 	switch update.CallbackQuery.Data {
 	case NextPageCallback:
-		b.GetAnotherDictionaryPage(userState, chatID, Next)
+		b.GetAnotherDictionaryPage(userState, chatID, model.Next)
 
 	case PreviousPageCallback:
-		b.GetAnotherDictionaryPage(userState, chatID, Previous)
+		b.GetAnotherDictionaryPage(userState, chatID, model.Previous)
 
 	case ShowWordCallback:
 		b.ShowRemindCard(userState, chatID)

@@ -60,7 +60,7 @@ func (r *WordRepo) FindByUserAndWord(userID int64, word string) (*model.Word, er
 	err := r.db.Get(&existingWord, query, userID, word)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Если не нашли слово - это не ошибка
+			return nil, nil // It isn't an error if the word wasn't found
 		}
 		return nil, err
 	}
