@@ -7,3 +7,10 @@ type User struct {
 	Username  string    `db:"username"`
 	CreatedAt time.Time `db:"created_at"`
 }
+
+func NewUser(userID int64, username string) *User {
+	return &User{
+		ID:       userID,
+		Username: username,
+	}
+}

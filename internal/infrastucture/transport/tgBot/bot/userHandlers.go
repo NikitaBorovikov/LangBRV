@@ -1,13 +1,12 @@
 package bot
 
 import (
-	"langbrv/internal/infrastucture/transport/tgBot/dto"
+	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
 )
 
 func (b *Bot) StartCommand(userID, chatID int64, username string) {
-	req := dto.NewRegistrationRequest(userID, username)
-	user := req.ToDomainUser()
+	user := model.NewUser(userID, username)
 
 	if err := b.uc.UserUC.CreateOrUpdate(user); err != nil {
 		b.handleError(chatID, err)
