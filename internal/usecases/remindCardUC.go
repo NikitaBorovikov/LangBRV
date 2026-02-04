@@ -58,7 +58,7 @@ func (uc *RemindCardUC) FormatListOfRemindedWords(remindList []model.Word) (stri
 
 	var sb strings.Builder
 	sb.Grow(expectedPageSize)
-	fmt.Fprintf(&sb, "🥸 <b>Вот слова, которые ты сегодня повторил:</b> \n\n")
+	fmt.Fprintf(&sb, "🦦 <b>Вот слова, которые ты сегодня повторил:</b> \n\n")
 
 	for _, word := range remindList {
 		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)
