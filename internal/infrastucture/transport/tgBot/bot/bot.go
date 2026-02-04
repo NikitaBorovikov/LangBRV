@@ -18,11 +18,11 @@ const (
 	RemindCommand        = "remind"
 	DeleteWordCommand    = "delete"
 
-	NextPageCallback      = "nextPage"
-	PreviousPageCallback  = "previousPage"
-	AddWordCallback       = "addWord"
-	GetDictionaryCallback = "getDictionary"
-	RemindSessionCallback = "newRemindSession"
+	NextPageCallback       = "nextPage"
+	PreviousPageCallback   = "previousPage"
+	AddWordCallback        = "addWord"
+	GetDictionaryCallback  = "getDictionary"
+	ShowRemindListCallback = "showRemindList"
 
 	RememberWellCallback  = "rememberWell"
 	RememberBadlyCallback = "rememberBadly"
@@ -189,8 +189,8 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 	case GetDictionaryCallback:
 		b.GetDictionaryCB(userState, chatID)
 
-	case RemindSessionCallback:
-		b.RepeatRemindSession(userState, chatID)
+	case ShowRemindListCallback:
+		b.ShowRemindList(userState, chatID)
 
 	default:
 		msgText := b.msg.Errors.Unknown

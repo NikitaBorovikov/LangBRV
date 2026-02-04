@@ -3,12 +3,13 @@ package bot
 import (
 	"langbrv/internal/core/model"
 	"langbrv/internal/infrastucture/transport/tgBot/keyboards"
-	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
 func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
+	us.DictionaryPage = nil
+
 	remindList, err := b.uc.WordUC.GetRemindList(us.UserID)
 	if err != nil {
 		b.handleError(chatID, err)
@@ -26,7 +27,6 @@ func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 	keyboard := keyboards.ClosedRemindCardKeyboard
 	us.RemindSession.MessageID = b.sendMessageWithKeyboard(chatID, formattedCard, keyboard)
 
-	us.DictionaryPage = nil
 	if err := b.uc.UserStateUC.Save(us); err != nil {
 		logrus.Error(err)
 		return
@@ -34,6 +34,8 @@ func (b *Bot) StartRemindSession(us *model.UserState, chatID int64) {
 }
 
 func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWell bool) {
+	us.DictionaryPage = nil
+
 	if err := b.updatePreviousCardInfo(us, isRememberWell); err != nil {
 		logrus.Errorf("failed to update word: %v", err)
 	}
@@ -45,7 +47,6 @@ func (b *Bot) GetNextRemindCard(us *model.UserState, chatID int64, isRememberWel
 	}
 
 	us.RemindSession.GoToNextCard()
-	us.DictionaryPage = nil
 
 	if err := b.uc.UserStateUC.Save(us); err != nil {
 		b.handleError(chatID, err)
@@ -74,37 +75,26 @@ func (b *Bot) ShowRemindCard(us *model.UserState, chatID int64) {
 	b.updateMessage(chatID, us.RemindSession.MessageID, formattedCard, keyboard)
 }
 
-func (b *Bot) RepeatRemindSession(us *model.UserState, chatID int64) {
-	us.RemindSession.CurrentCard = model.DefaultRemindCardNumber
-	us.RemindSession.DeterminePosition()
+func (b *Bot) ShowRemindList(us *model.UserState, chatID int64) {
+	us.DictionaryPage = nil
 
-	formattedCard, err := b.uc.RemindCardUC.FormatClosedRemindCard(*us.RemindSession)
+	remindList, err := b.uc.WordUC.GetRemindList(us.UserID)
 	if err != nil {
 		b.handleError(chatID, err)
 		return
 	}
 
-	keyboard := keyboards.ClosedRemindCardKeyboard
-	b.updateMessage(chatID, us.RemindSession.MessageID, formattedCard, keyboard)
+	formattedList, err := b.uc.RemindCardUC.FormatRemindList(remindList)
 
-	us.DictionaryPage = nil
-	if err := b.uc.UserStateUC.Save(us); err != nil {
-		logrus.Error(err)
-		return
-	}
+	b.updateMessage(chatID, us.RemindSession.MessageID, formattedList, nil)
 }
 
 func (b *Bot) updatePreviousCardInfo(us *model.UserState, isRememberWell bool) error {
 	previousCardIdx := us.RemindSession.CurrentCard - 1
 	previousWord := &us.RemindSession.Words[previousCardIdx]
 
-	// Prevent the word data from being updated during retraining.
-	lastSeen := previousWord.LastSeen.Truncate(24 * time.Hour)
-	today := time.Now().UTC().Truncate(24 * time.Hour)
-	if !lastSeen.Equal(today) {
-		if err := b.uc.WordUC.Update(previousWord, isRememberWell); err != nil {
-			return err
-		}
+	if err := b.uc.WordUC.Update(previousWord, isRememberWell); err != nil {
+		return err
 	}
 	return nil
 }

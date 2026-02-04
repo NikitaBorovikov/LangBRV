@@ -50,3 +50,18 @@ func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindSession) 
 	}
 	return sb.String(), nil
 }
+
+func (uc *RemindCardUC) FormatRemindList(remindList []model.Word) (string, error) {
+	if len(remindList) == 0 {
+		return "", apperrors.ErrNoWordsToRemind
+	}
+
+	var sb strings.Builder
+	sb.Grow(expectedPageSize)
+	fmt.Fprintf(&sb, "🥸 <b>Вот слова, которые ты сегодня повторил:</b> \n\n")
+
+	for _, word := range remindList {
+		fmt.Fprintf(&sb, "• %s - %s\n", word.Original, word.Translation)
+	}
+	return sb.String(), nil
+}

@@ -64,7 +64,7 @@ var OpenedRemindCardKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var RemindSessionIsOverKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Тренировать еще раз", "newRemindSession"),
+		tgbotapi.NewInlineKeyboardButtonData("Показать список слов", "showRemindList"),
 	),
 )
 
