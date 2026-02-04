@@ -190,7 +190,7 @@ func (b *Bot) handleCallbacks(update tgbotapi.Update) {
 		b.GetDictionaryCB(userState, chatID)
 
 	case ShowRemindListCallback:
-		b.ShowRemindList(userState, chatID)
+		b.ShowListOfRemindedWords(userState, chatID)
 
 	default:
 		msgText := b.msg.Errors.Unknown

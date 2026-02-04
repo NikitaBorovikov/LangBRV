@@ -110,6 +110,11 @@ func (uc *WordUC) GetRemindList(userID int64) ([]model.Word, error) {
 	return remindList, err
 }
 
+func (uc *WordUC) GetListOfRemindedWords(userID int64) ([]model.Word, error) {
+	remindList, err := uc.WordRepo.GetListOfRemindedWords(userID)
+	return remindList, err
+}
+
 func (uc *WordUC) FormatRemindList(words []model.Word) (string, error) {
 	if len(words) == 0 {
 		return "", apperrors.ErrNoWordsToRemind

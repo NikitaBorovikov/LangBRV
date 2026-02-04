@@ -51,7 +51,7 @@ func (uc *RemindCardUC) FormatOpenedRemindCard(remindCards model.RemindSession) 
 	return sb.String(), nil
 }
 
-func (uc *RemindCardUC) FormatRemindList(remindList []model.Word) (string, error) {
+func (uc *RemindCardUC) FormatListOfRemindedWords(remindList []model.Word) (string, error) {
 	if len(remindList) == 0 {
 		return "", apperrors.ErrNoWordsToRemind
 	}
